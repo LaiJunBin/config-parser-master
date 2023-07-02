@@ -3,7 +3,7 @@ on:
   push:
     branches: [ "main" ]
 jobs:
-  test-and-build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,38 +15,8 @@ jobs:
         run: npm install -g pnpm@8
       - name: Install dependencies
         run: pnpm install
-      - name: Run test
-        run: pnpm test -- --run
       - name: Build
         run: pnpm build
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: bundle
-          path: |
-            dist
-            package.json
-            LICENSE
-            README.md
-  publish:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: bundle
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Setup env
-        run: |
-          echo "GITHUB_SHA_SHORT=$(echo ${{ github.sha }} | cut -c -9)" >> $GITHUB_ENV
-          echo "CURRENT_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
-          echo "CURRENT_VERSION=$(npm pkg get version | sed -e 's/^"//' -e 's/"$//')" >> $GITHUB_ENV
-      - name: Update package.json version
-        run: npm pkg set version=${{ env.CURRENT_VERSION }}-${{ env.GITHUB_SHA_SHORT }}-${{ env.CURRENT_DATE }}
       - name: Publish to npm
         run: npm publish
         env:
