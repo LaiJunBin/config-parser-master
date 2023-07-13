@@ -63,6 +63,14 @@ describe('test json parser', () => {
         )
       ).toBe('test3')
     })
+
+    test('test get . in same level', () => {
+      expect(parser.get('{"test.test": "test"}', 'test.test')).toBe(undefined)
+      expect(parser.get('{"test.test": "test"}', '"test.test"')).toBe('test')
+      expect(parser.get('{"test.test": "test"}', 'test.test.test')).toBe(
+        undefined
+      )
+    })
   })
 
   describe('test put', () => {
@@ -107,6 +115,29 @@ describe('test json parser', () => {
             'test1'
           ) as Record<string, Record<string, unknown>>
         ).test2.test3
+      ).toBe('test1')
+    })
+
+    test('test put . in same level', () => {
+      expect(
+        parser.get(
+          parser.put('{"test.test": "test"}', 'test.test', 'test1'),
+          '"test.test"'
+        )
+      ).toBe('test')
+
+      expect(
+        parser.get(
+          parser.put('{"test.test": "test"}', '"test.test.test"', 'test1'),
+          'test.test.test'
+        )
+      ).toBeUndefined()
+
+      expect(
+        parser.get(
+          parser.put('{"test.test": "test"}', '"test.test.test"', 'test1'),
+          '"test.test.test"'
+        )
       ).toBe('test1')
     })
 
@@ -160,6 +191,22 @@ describe('test json parser', () => {
           'test.b'
         )
       ).toBe(200)
+    })
+
+    test('test delete . in same level', () => {
+      expect(
+        parser.get(
+          parser.delete('{"test.test": "test"}', '"test.test"'),
+          '"test.test"'
+        )
+      ).toBeUndefined()
+
+      expect(
+        parser.get(
+          parser.delete('{"test.test": "test"}', 'test.test'),
+          '"test.test"'
+        )
+      ).toBe('test')
     })
   })
 })
