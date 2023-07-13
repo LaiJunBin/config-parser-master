@@ -8,6 +8,7 @@ a:
     d: 2
   e: 3
 f: 4
+test.test: test
 `
 describe('test yaml parser', () => {
   describe('test check', () => {
@@ -34,6 +35,12 @@ describe('test yaml parser', () => {
       expect(parser.get(yamlContent, 'f')).toBe(4)
     })
 
+    test('test get . in same level', () => {
+      expect(parser.get(yamlContent, 'test.test')).toBe(undefined)
+      expect(parser.get(yamlContent, '"test.test"')).toBe('test')
+      expect(parser.get(yamlContent, 'test.test.test')).toBe(undefined)
+    })
+
     test('test get undefined', () => {
       expect(parser.get(yamlContent, 'a.b.c.d')).toBe(undefined)
       expect(parser.get(yamlContent, 'a.b.c.d.e')).toBe(undefined)
@@ -55,6 +62,19 @@ describe('test yaml parser', () => {
       expect(parser.get(parser.put(yamlContent, 'd.e.f', 100), 'd.e.f')).toBe(
         100
       )
+    })
+
+    test('test put . in same level', () => {
+      expect(
+        parser.get(parser.put(yamlContent, '"test.test"', 'test1'), 'test.test')
+      ).toBeUndefined()
+
+      expect(
+        parser.get(
+          parser.put(yamlContent, '"test.test"', 'test1'),
+          '"test.test"'
+        )
+      ).toBe('test1')
     })
 
     test('test put fail', () => {
@@ -86,6 +106,16 @@ describe('test yaml parser', () => {
       expect(
         parser.get(parser.delete(yamlContent, 'a.b.c.d.e.f'), 'a.b.c.d.e.f')
       ).toBe(undefined)
+    })
+
+    test('test delete . in same level', () => {
+      expect(
+        parser.get(parser.delete(yamlContent, '"test.test"'), '"test.test"')
+      ).toBeUndefined()
+
+      expect(
+        parser.get(parser.delete(yamlContent, 'test.test'), '"test.test"')
+      ).toBe('test')
     })
   })
 })

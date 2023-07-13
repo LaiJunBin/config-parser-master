@@ -1,4 +1,5 @@
 import { Parser, ParserValueType } from '.'
+import { splitByDot } from '../utils'
 
 export class JSONParser implements Parser {
   check(content: string): boolean {
@@ -11,7 +12,7 @@ export class JSONParser implements Parser {
   }
   put(content: string, key: string, value: ParserValueType): string {
     const data = JSON.parse(content)
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length; i++) {
       const propertyName = keyProperties[i]
@@ -31,7 +32,7 @@ export class JSONParser implements Parser {
   }
   delete(content: string, key: string): string {
     const data = JSON.parse(content)
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length; i++) {
       const propertyName = keyProperties[i]
@@ -48,7 +49,7 @@ export class JSONParser implements Parser {
   }
   get(content: string, key: string): ParserValueType {
     const data = JSON.parse(content)
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length - 1; i++) {
       const propertyName = keyProperties[i]

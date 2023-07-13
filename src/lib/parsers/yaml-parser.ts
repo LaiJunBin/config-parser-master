@@ -1,5 +1,6 @@
 import { Parser, ParserValueType } from '.'
 import yaml from 'js-yaml'
+import { splitByDot } from '../utils'
 
 export class YamlParser implements Parser {
   check(content: string): boolean {
@@ -12,7 +13,7 @@ export class YamlParser implements Parser {
   }
   put(content: string, key: string, value: ParserValueType): string {
     const data = yaml.load(content, 'utf-8')
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length; i++) {
       const propertyName = keyProperties[i]
@@ -32,7 +33,7 @@ export class YamlParser implements Parser {
   }
   delete(content: string, key: string): string {
     const data = yaml.load(content, 'utf-8')
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length; i++) {
       const propertyName = keyProperties[i]
@@ -49,7 +50,7 @@ export class YamlParser implements Parser {
   }
   get(content: string, key: string): ParserValueType {
     const data = yaml.load(content, 'utf-8')
-    const keyProperties = key.split('.')
+    const keyProperties = splitByDot(key)
     let currentObject = data
     for (let i = 0; i < keyProperties.length - 1; i++) {
       const propertyName = keyProperties[i]
