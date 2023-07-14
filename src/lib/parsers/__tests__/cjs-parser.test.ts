@@ -335,6 +335,46 @@ describe('test cjs parser', () => {
         ).c
       ).toStrictEqual({ d: 123 })
     })
+
+    test('test put array in object', () => {
+      expect(
+        parser.get(
+          parser.put(exportSyntax + '{}', 'test', {
+            files: ['*.svelte'],
+            parser: 'svelte-eslint-parser',
+            parserOptions: {
+              parser: '@typescript-eslint/parser',
+            },
+          }),
+          'test.files'
+        )
+      ).toStrictEqual(['*.svelte'])
+    })
+
+    test('test put object in array', () => {
+      expect(
+        parser.get(
+          parser.put(exportSyntax + '{}', 'test', [
+            {
+              files: ['*.svelte'],
+              parser: 'svelte-eslint-parser',
+              parserOptions: {
+                parser: '@typescript-eslint/parser',
+              },
+            },
+          ]),
+          'test'
+        )
+      ).toStrictEqual([
+        {
+          files: ['*.svelte'],
+          parser: 'svelte-eslint-parser',
+          parserOptions: {
+            parser: '@typescript-eslint/parser',
+          },
+        },
+      ])
+    })
   })
 
   describe('test delete', () => {

@@ -44,7 +44,13 @@ export function recursiveAssign(node, value: ParserValueType) {
     if (typeof value === 'object' && t.isObjectExpression(node)) {
       for (const key of Object.keys(value)) {
         const val = value[key]
-        if (typeof val === 'object') {
+        if (Array.isArray(val)) {
+          const property = t.objectProperty(
+            t.identifier(key),
+            recursiveAssign(t.objectExpression([]), val).value
+          )
+          node.properties.push(property)
+        } else if (typeof val === 'object') {
           const property = t.objectProperty(
             t.identifier(key),
             recursiveAssign(t.objectExpression([]), val)
