@@ -1,6 +1,7 @@
 import { ParserValueType } from '..'
 import { CJSParser } from '../cjs-parser'
 import * as t from '@babel/types'
+import generate from '@babel/generator'
 
 const parser = new CJSParser()
 const exportSyntax = 'module.exports = '
@@ -499,6 +500,129 @@ describe('test cjs parser', () => {
       expect(
         parser.get(parser.delete(exportSyntax + ' { a: {} }', 'a.b.c'), 'a')
       ).toStrictEqual({})
+    })
+  })
+
+  describe('test import', () => {
+    test('test import default', () => {
+      expect(
+        parser.import('', 'bar.js', {
+          defaultKey: 'foo',
+        })
+      ).toBe(`import foo from "bar.js";`)
+    })
+
+    test('test import with keys', () => {
+      expect(
+        parser.import('', 'bar.js', {
+          keys: ['foo', 'bar'],
+        })
+      ).toBe(`import { foo, bar } from "bar.js";`)
+    })
+
+    test('test import with keys and default', () => {
+      expect(
+        parser.import('', 'bar.js', {
+          defaultKey: 'foo',
+          keys: ['bar'],
+        })
+      ).toBe(`import foo, { bar } from "bar.js";`)
+    })
+
+    test('test import without keys and default', () => {
+      expect(parser.import('', 'bar.js')).toBe(`import "bar.js";`)
+    })
+  })
+
+  describe('test require', () => {
+    test('test require default', () => {
+      expect(
+        parser
+          .require('', 'bar.js', {
+            defaultKey: 'foo',
+          })
+          .replace(/\s+/g, ' ')
+      ).toBe(`const { foo: default } = require("bar.js");`)
+    })
+
+    test('test require with keys', () => {
+      expect(
+        parser
+          .require('', 'bar.js', {
+            keys: ['foo', 'bar'],
+          })
+          .replace(/\s+/g, ' ')
+      ).toBe(`const { foo: foo, bar: bar } = require("bar.js");`)
+    })
+
+    test('test require with keys and default', () => {
+      expect(
+        parser
+          .require('', 'bar.js', {
+            defaultKey: 'foo',
+            keys: ['bar'],
+          })
+          .replace(/\s+/g, ' ')
+      ).toBe(`const { foo: default, bar: bar } = require("bar.js");`)
+    })
+
+    test('test require without keys and default', () => {
+      expect(parser.require('', 'bar.js')).toBe(`require("bar.js");`)
+    })
+  })
+
+  describe('test createCallExpression', () => {
+    test('test create call expression', () => {
+      expect(
+        generate(parser.createCallExpression('console.log', ['hello world']))
+          .code
+      ).toBe(`console.log("hello world")`)
+    })
+    test('test args is object', () => {
+      expect(
+        generate(
+          parser.createCallExpression('console.log', [{ a: 1 }])
+        ).code.replace(/\s+/g, ' ')
+      ).toBe(`console.log({ a: 1 })`)
+    })
+
+    test('test args is array', () => {
+      expect(
+        generate(
+          parser.createCallExpression('console.log', [[1, 2, 3]])
+        ).code.replace(/\s+/g, ' ')
+      ).toBe(`console.log([1, 2, 3])`)
+    })
+
+    test('test args is multiple', () => {
+      expect(
+        generate(
+          parser.createCallExpression('console.log', ['hello world', 123])
+        ).code.replace(/\s+/g, ' ')
+      ).toBe(`console.log("hello world", 123)`)
+    })
+
+    test('test args is empty', () => {
+      expect(
+        generate(parser.createCallExpression('console.log')).code.replace(
+          /\s+/g,
+          ' '
+        )
+      ).toBe(`console.log()`)
+    })
+  })
+
+  describe('test createCallExpression integrate', () => {
+    test('test put call expression', () => {
+      expect(
+        parser
+          .put(exportSyntax + ' { }', 'test', [
+            1,
+            parser.createCallExpression('console.log', ['hello world']),
+            3,
+          ])
+          .replace(/\s+/g, ' ')
+      ).toBe(exportSyntax + `{ test: [1, console.log("hello world"), 3] };`)
     })
   })
 })

@@ -1,7 +1,7 @@
 import { Parser, ParserValueType } from '.'
 import { splitByDot } from '../utils'
 
-export class JSONParser implements Parser {
+export class JSONParser extends Parser {
   check(content: string): boolean {
     try {
       JSON.parse(content)

@@ -39,4 +39,36 @@ export class Config {
   async save(): Promise<void> {
     return fs.writeFileSync(this.file, this._content)
   }
+
+  import(
+    source: string,
+    options: {
+      defaultKey?: string
+      keys?: string[]
+    } = {
+      defaultKey: undefined,
+      keys: undefined,
+    }
+  ): Config {
+    this._content = this.parser.import(this._content, source, options)
+    return this
+  }
+
+  require(
+    source: string,
+    options: {
+      defaultKey?: string
+      keys?: string[]
+    } = {
+      defaultKey: undefined,
+      keys: undefined,
+    }
+  ): Config {
+    this._content = this.parser.require(this._content, source, options)
+    return this
+  }
+
+  createCallExpression(key: string, args?: ParserValueType[]) {
+    return this.parser.createCallExpression(key, args)
+  }
 }
