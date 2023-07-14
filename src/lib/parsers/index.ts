@@ -8,32 +8,23 @@ export type ParserValueType =
   | ParserValueType[]
   | { [key: string]: ParserValueType }
 
-export abstract class Parser {
-  abstract check(content: string): boolean | never
-  abstract get(content: string, key: string): ParserValueType
-  abstract put(content: string, key: string, value: ParserValueType): string
-  abstract delete(content: string, key: string): string
+export interface Parser {
+  check(content: string): boolean | never
+  get(content: string, key: string): ParserValueType
+  put(content: string, key: string, value: ParserValueType): string
+  delete(content: string, key: string): string
+}
 
+export interface IJSParser extends Parser {
   require(
     content: string,
     source: string,
     options?: { defaultKey?: string; keys?: string[] }
-  ): string {
-    throw new Error(`Not support require in ${this.constructor.name}`)
-  }
+  )
   import(
     content: string,
     source: string,
     options?: { defaultKey?: string; keys?: string[] }
-  ): string {
-    throw new Error(`Not support import in ${this.constructor.name}`)
-  }
-  createCallExpression(
-    key: string,
-    args?: ParserValueType[]
-  ): t.CallExpression {
-    throw new Error(
-      `Not support createCallExpression in ${this.constructor.name}`
-    )
-  }
+  )
+  createCallExpression(key: string, args?: ParserValueType[])
 }

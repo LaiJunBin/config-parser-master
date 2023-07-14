@@ -1,17 +1,17 @@
 import { ConfigParser } from './lib/config-parser'
-import { CJSParser } from './lib/parsers/cjs-parser'
-import { JSParser } from './lib/parsers/js-parser'
-import { JSONParser } from './lib/parsers/json-parser'
-import { YamlParser } from './lib/parsers/yaml-parser'
+import { CJSConfig } from './lib/configs/cjs-config'
+import { JSConfig } from './lib/configs/js-config'
+import { JSONConfig } from './lib/configs/json-config'
+import { YamlConfig } from './lib/configs/yaml-config'
 
-ConfigParser.register('.cjs', CJSParser)
-ConfigParser.register('.js', JSParser)
-ConfigParser.register('.ts', JSParser)
-ConfigParser.register('.mjs', JSParser)
-ConfigParser.register('.mts', JSParser)
-ConfigParser.register('.yml', YamlParser)
-ConfigParser.register('.yaml', YamlParser)
-ConfigParser.register('.json', JSONParser)
-ConfigParser.registerEndwith('rc', JSONParser)
+ConfigParser.register('.cjs', CJSConfig)
+ConfigParser.register('.js', JSConfig)
+ConfigParser.register('.ts', JSConfig)
+ConfigParser.register('.mjs', JSConfig)
+ConfigParser.register('.mts', JSConfig)
+ConfigParser.register('.yml', YamlConfig)
+ConfigParser.register('.yaml', YamlConfig)
+ConfigParser.register('.json', JSONConfig)
+ConfigParser.registerEndwith('rc', JSONConfig)
 
 export { ConfigParser }

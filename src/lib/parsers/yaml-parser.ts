@@ -2,7 +2,7 @@ import { Parser, ParserValueType } from '.'
 import yaml from 'js-yaml'
 import { splitByDot } from '../utils'
 
-export class YamlParser extends Parser {
+export class YamlParser implements Parser {
   check(content: string): boolean {
     try {
       yaml.load(content, 'utf-8')

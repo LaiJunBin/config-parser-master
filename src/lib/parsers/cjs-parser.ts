@@ -1,4 +1,4 @@
-import { Parser, ParserValueType } from '.'
+import { IJSParser, ParserValueType } from '.'
 import { parse } from '@babel/parser'
 import generate from '@babel/generator'
 import traverse from '@babel/traverse'
@@ -235,7 +235,7 @@ function deleteKeyByPath(content: string, key: string): string {
   return code
 }
 
-export class CJSParser extends Parser {
+export class CJSParser implements IJSParser {
   check(content: string): boolean {
     return checkModuleExports(content)
   }
