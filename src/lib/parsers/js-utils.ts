@@ -1,5 +1,8 @@
+import { parse } from '@babel/parser'
 import { ParserValueType } from '.'
 import * as t from '@babel/types'
+import traverse from '@babel/traverse'
+import generate from '@babel/generator'
 
 export function getObjectValuesFromNode(node) {
   const objectValues = {}
@@ -11,7 +14,9 @@ export function getObjectValuesFromNode(node) {
   if (t.isObjectExpression(node)) {
     for (const property of node.properties) {
       if (t.isObjectProperty(property)) {
-        const propertyName = property.key.name
+        const propertyName = t.isIdentifier(property.key)
+          ? property.key.name
+          : property.key.value
         const propertyValue = property.value
         objectValues[propertyName] = getObjectValuesFromNode(propertyValue)
       }
@@ -74,4 +79,113 @@ export function recursiveAssign(node, value: ParserValueType) {
   }
 
   return node
+}
+
+export function importHandler(
+  content: string,
+  source: string,
+  options: {
+    defaultKey?: string
+    keys?: string[]
+  } = {
+    defaultKey: undefined,
+    keys: undefined,
+  }
+): string {
+  const { keys, defaultKey } = options
+  const ast = parse(content, {
+    sourceType: 'module',
+  })
+
+  const specifiers = []
+  if (defaultKey) {
+    specifiers.push(t.importDefaultSpecifier(t.identifier(defaultKey)))
+  }
+
+  if (keys) {
+    specifiers.push(
+      ...keys.map((key) =>
+        t.importSpecifier(t.identifier(key), t.identifier(key))
+      )
+    )
+  }
+
+  const importDeclaration = t.importDeclaration(
+    specifiers,
+    t.stringLiteral(source)
+  )
+
+  traverse(ast, {
+    Program(path) {
+      path.node.body.unshift(importDeclaration)
+    },
+  })
+
+  const { code } = generate(ast)
+  return code
+}
+
+export function requireHandler(
+  content: string,
+  source: string,
+  options?: { defaultKey?: string; keys?: string[] }
+): string {
+  const { keys, defaultKey } = options ?? {}
+  const ast = parse(content, {
+    sourceType: 'module',
+  })
+
+  const requireDeclaration =
+    !keys && !defaultKey
+      ? t.expressionStatement(
+          t.callExpression(t.identifier('require'), [t.stringLiteral(source)])
+        )
+      : t.variableDeclaration('const', [
+          t.variableDeclarator(
+            t.objectPattern([
+              ...(defaultKey
+                ? [
+                    t.objectProperty(
+                      t.identifier(defaultKey),
+                      t.identifier('default')
+                    ),
+                  ]
+                : []),
+              ...(keys ?? []).map((key) =>
+                t.objectProperty(t.identifier(key), t.identifier(key))
+              ),
+            ]),
+            t.callExpression(t.identifier('require'), [t.stringLiteral(source)])
+          ),
+        ])
+
+  traverse(ast, {
+    Program(path) {
+      path.node.body.unshift(requireDeclaration)
+    },
+  })
+
+  const { code } = generate(ast)
+  return code
+}
+
+export function createCallExpressionHandler(
+  key: string,
+  args?: ParserValueType[]
+): t.CallExpression {
+  const keyProperties = key.split('.')
+  const callee = keyProperties.reduce((acc, prop) => {
+    if (acc) {
+      return t.memberExpression(acc, t.identifier(prop))
+    } else {
+      return t.identifier(prop)
+    }
+  }, null as t.Expression | null)
+
+  const callExpression = t.callExpression(
+    callee,
+    args.map((arg) => t.valueToNode(arg))
+  )
+
+  return callExpression
 }

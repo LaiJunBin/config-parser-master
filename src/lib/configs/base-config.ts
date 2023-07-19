@@ -1,9 +1,9 @@
-import { Parser, ParserValueType } from './parsers'
+import { Parser, ParserValueType } from '../parsers'
 import fs from 'fs'
 
-export class Config {
-  private _content: string
-  constructor(private _file: string, private parser: Parser) {
+export class BaseConfig {
+  protected _content: string
+  constructor(private _file: string, protected parser: Parser) {
     this._content = fs.readFileSync(_file, 'utf-8')
 
     if (!this.parser.check(this._content)) {
@@ -19,12 +19,12 @@ export class Config {
     return this._file
   }
 
-  put(key: string, value: ParserValueType): Config {
+  put(key: string, value: ParserValueType): BaseConfig {
     this._content = this.parser.put(this._content, key, value)
     return this
   }
 
-  delete(key: string): Config {
+  delete(key: string): BaseConfig {
     this._content = this.parser.delete(this._content, key)
     return this
   }

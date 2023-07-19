@@ -1,54 +1,59 @@
 import fs from 'fs'
 import path from 'path'
-import { Config } from './config'
+import { BaseConfig } from './configs/base-config'
+import { BaseJSConfig } from './configs/base-js-config'
 
 export class ConfigParser {
-  static #parsers = {}
+  static #configs = {}
   static #validates = []
 
-  static parse(file) {
+  static parse(file: string): BaseConfig {
     if (!fs.existsSync(file)) {
       throw new Error(`File ${file} is not exists.`)
     }
 
     const ext = path.extname(file)
-    const parser = (function getParser() {
-      if (ConfigParser.#parsers[ext]) {
-        return ConfigParser.#parsers[ext]
+    const config = (function getConfig() {
+      if (ConfigParser.#configs[ext]) {
+        return ConfigParser.#configs[ext]
       }
 
       for (const validate of ConfigParser.#validates) {
-        const parser = validate(file)
-        if (parser) {
-          return parser
+        const config = validate(file)
+        if (config) {
+          return config
         }
       }
     })()
 
-    if (!parser) {
-      throw new Error(`Can't find ${ext} parser.`)
+    if (!config) {
+      throw new Error(`Can't find config support ${ext}`)
     }
 
     try {
-      return new Config(file, new parser())
+      return new config(file)
     } catch (e) {
       throw new Error(`Can't parser file: ${file}\n${e}`)
     }
   }
 
-  static register(ext, parser) {
-    this.#parsers[ext] = parser
+  static parseJs(file: string): BaseJSConfig {
+    return this.parse(file) as BaseJSConfig
   }
 
-  static registerEndwith(ext, parser) {
+  static register(ext, config) {
+    this.#configs[ext] = config
+  }
+
+  static registerEndwith(ext, config) {
     this.#validates.push((file) => {
       if (file.endsWith(ext)) {
-        return parser
+        return config
       }
     })
   }
 
-  static listParsers() {
-    return Object.keys(this.#parsers)
+  static listConfigs() {
+    return Object.keys(this.#configs)
   }
 }

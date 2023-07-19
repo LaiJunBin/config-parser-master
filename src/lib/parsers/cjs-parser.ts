@@ -1,9 +1,15 @@
-import { Parser, ParserValueType } from '.'
+import { IJSParser, ParserValueType } from '.'
 import { parse } from '@babel/parser'
 import generate from '@babel/generator'
 import traverse from '@babel/traverse'
 import * as t from '@babel/types'
-import { getObjectValuesFromNode, recursiveAssign } from './js-utils'
+import {
+  createCallExpressionHandler,
+  getObjectValuesFromNode,
+  importHandler,
+  recursiveAssign,
+  requireHandler,
+} from './js-utils'
 
 function checkModuleExports(content: string): boolean {
   const ast = parse(content, {
@@ -229,7 +235,7 @@ function deleteKeyByPath(content: string, key: string): string {
   return code
 }
 
-export class CJSParser implements Parser {
+export class CJSParser implements IJSParser {
   check(content: string): boolean {
     return checkModuleExports(content)
   }
@@ -241,5 +247,28 @@ export class CJSParser implements Parser {
   }
   get(content: string, key: string): ParserValueType {
     return getValueByPath(content, key)
+  }
+
+  import(
+    content: string,
+    source: string,
+    options?: { defaultKey?: string; keys?: string[] }
+  ): string {
+    return importHandler(content, source, options)
+  }
+
+  require(
+    content: string,
+    source: string,
+    options?: { defaultKey?: string; keys?: string[] }
+  ): string {
+    return requireHandler(content, source, options)
+  }
+
+  createCallExpression(
+    key: string,
+    args: ParserValueType[] = []
+  ): t.CallExpression {
+    return createCallExpressionHandler(key, args)
   }
 }
