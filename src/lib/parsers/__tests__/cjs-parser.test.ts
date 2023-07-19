@@ -116,6 +116,25 @@ describe('test cjs parser', () => {
       expect(values).toEqual({ b: 1, c: expect.anything() })
       expect(t.isCallExpression(values.c as unknown as t.Node)).toBeTruthy()
     })
+
+    test('test get object key is string', () => {
+      expect(
+        (
+          parser.get(exportSyntax + ' { "a": { "b": 1 } }', 'a') as Record<
+            string,
+            unknown
+          >
+        ).b
+      ).toBe(1)
+      expect(
+        (
+          parser.get(
+            exportSyntax + ' { "a": { "b": { "c": 1 } } }',
+            'a'
+          ) as Record<string, Record<string, unknown>>
+        ).b.c
+      ).toBe(1)
+    })
   })
 
   describe('test put', () => {

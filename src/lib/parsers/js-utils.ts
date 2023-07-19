@@ -14,7 +14,9 @@ export function getObjectValuesFromNode(node) {
   if (t.isObjectExpression(node)) {
     for (const property of node.properties) {
       if (t.isObjectProperty(property)) {
-        const propertyName = property.key.name
+        const propertyName = t.isIdentifier(property.key)
+          ? property.key.name
+          : property.key.value
         const propertyValue = property.value
         objectValues[propertyName] = getObjectValuesFromNode(propertyValue)
       }
