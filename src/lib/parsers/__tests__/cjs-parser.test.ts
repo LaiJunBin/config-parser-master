@@ -885,4 +885,24 @@ describe('test cjs parser', () => {
       expect(parser.getCallExpressionArgs(123)).toStrictEqual([])
     })
   })
+
+  describe('test isContainCallExpression', () => {
+    test('test is contain call expression without arg', () => {
+      expect(
+        parser.isContainCallExpression('console.log(123)', 'console.log')
+      ).toBeTruthy()
+    })
+
+    test('test is contain call expression with arg success', () => {
+      expect(
+        parser.isContainCallExpression('console.log(123)', 'console.log', [123])
+      ).toBeTruthy()
+    })
+
+    test('test is contain call expression with arg fail', () => {
+      expect(
+        parser.isContainCallExpression('console.log(123)', 'console.log', [456])
+      ).toBeFalsy()
+    })
+  })
 })

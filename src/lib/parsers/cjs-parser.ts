@@ -8,6 +8,7 @@ import {
   getCallExpressionArgs,
   getObjectValuesFromNode,
   importHandler,
+  isContainCallExpression,
   isSameCallExpression,
   isStrictSameCallExpression,
   recursiveAssign,
@@ -288,5 +289,13 @@ export class CJSParser implements IJSParser {
   }
   getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
     return getCallExpressionArgs(callExpression)
+  }
+
+  isContainCallExpression(
+    content: string,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return isContainCallExpression(content, name, args)
   }
 }

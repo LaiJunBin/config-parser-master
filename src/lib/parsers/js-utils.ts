@@ -277,3 +277,30 @@ export function getCallExpressionArgs(
     }
   })
 }
+
+export function isContainCallExpression(
+  content: string,
+  name: string,
+  args?: ParserValueType[]
+): boolean {
+  const ast = parse(content, {
+    sourceType: 'module',
+  })
+
+  let isContain = false
+
+  traverse(ast, {
+    CallExpression(path) {
+      const { node } = path
+      if (
+        args
+          ? isStrictSameCallExpression(node, name, args)
+          : isSameCallExpression(node, name)
+      ) {
+        isContain = true
+      }
+    },
+  })
+
+  return isContain
+}

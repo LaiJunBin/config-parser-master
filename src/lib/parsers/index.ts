@@ -34,4 +34,10 @@ export interface IJSParser extends Parser {
   ): boolean
   isSameCallExpression(callExpression: unknown, name: string): boolean
   getCallExpressionArgs(callExpression: unknown): ParserValueType[]
+
+  isContainCallExpression(
+    content: string,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean
 }

@@ -45,4 +45,8 @@ export class BaseJSConfig extends BaseConfig {
   getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
     return this.parser.getCallExpressionArgs(callExpression)
   }
+
+  isContainCallExpression(name: string, args?: ParserValueType[]): boolean {
+    return this.parser.isContainCallExpression(this._content, name, args)
+  }
 }

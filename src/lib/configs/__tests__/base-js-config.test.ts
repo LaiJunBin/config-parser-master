@@ -44,13 +44,21 @@ class TestParser implements IJSParser {
     key: string,
     args?: ParserValueType[]
   ): boolean {
-    throw true
+    return true
   }
   isSameCallExpression(callExpression: unknown, key: string): boolean {
-    throw true
+    return true
   }
   getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
-    throw []
+    return []
+  }
+
+  isContainCallExpression(
+    content: string,
+    key: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return true
   }
 }
 
@@ -155,5 +163,14 @@ describe('test base js config', () => {
       []
     )
     expect(config.getCallExpressionArgs('test')).toEqual([])
+  })
+
+  test('test is contain call expression', () => {
+    const config = new TestConfig('file')
+    vi.spyOn(
+      TestParser.prototype,
+      'isContainCallExpression'
+    ).mockReturnValueOnce(true)
+    expect(config.isContainCallExpression('test')).toBe(true)
   })
 })
