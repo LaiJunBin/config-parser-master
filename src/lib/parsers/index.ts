@@ -26,5 +26,12 @@ export interface IJSParser extends Parser {
     source: string,
     options?: { defaultKey?: string; keys?: string[] }
   )
-  createCallExpression(key: string, args?: ParserValueType[])
+  createCallExpression(name: string, args?: ParserValueType[]): t.CallExpression
+  isStrictSameCallExpression(
+    callExpression: unknown,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean
+  isSameCallExpression(callExpression: unknown, name: string): boolean
+  getCallExpressionArgs(callExpression: unknown): ParserValueType[]
 }

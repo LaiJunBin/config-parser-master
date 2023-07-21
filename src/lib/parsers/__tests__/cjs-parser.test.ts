@@ -100,6 +100,19 @@ describe('test cjs parser', () => {
       ).toBeTruthy()
     })
 
+    test('test get call expression in object', () => {
+      expect(
+        t.isCallExpression(
+          (
+            parser.get(
+              exportSyntax + ' { a: { b: require(123) } }',
+              'a'
+            ) as unknown as Record<string, t.Node>
+          ).b
+        )
+      ).toBeTruthy()
+    })
+
     test('test get array include call expression value', () => {
       const values = parser.get(exportSyntax + ' { a: [1, require(123)] }', 'a')
       expect(values).toHaveLength(2)
@@ -395,6 +408,22 @@ describe('test cjs parser', () => {
         },
       ])
     })
+
+    test('test put call expression in object', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.get(
+            parser.put(
+              exportSyntax + '{ test: {} }',
+              'test.call',
+              parser.createCallExpression('testCall')
+            ),
+            'test.call'
+          ),
+          'testCall'
+        )
+      ).toBeTruthy()
+    })
   })
 
   describe('test delete', () => {
@@ -629,6 +658,16 @@ describe('test cjs parser', () => {
         )
       ).toBe(`console.log()`)
     })
+
+    test('test args is call expression', () => {
+      expect(
+        generate(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', ['hello world']),
+          ])
+        ).code.replace(/\s+/g, ' ')
+      ).toBe(`console.log(console.log("hello world"))`)
+    })
   })
 
   describe('test createCallExpression integrate', () => {
@@ -642,6 +681,208 @@ describe('test cjs parser', () => {
           ])
           .replace(/\s+/g, ' ')
       ).toBe(exportSyntax + `{ test: [1, console.log("hello world"), 3] };`)
+    })
+  })
+
+  describe('test isSameCallExpression', () => {
+    test('test is same call expression', () => {
+      expect(
+        parser.isSameCallExpression(
+          parser.createCallExpression('console.log', ['hello world']),
+          'console.log'
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is same deep call expression', () => {
+      expect(
+        parser.isSameCallExpression(
+          parser.createCallExpression('console.log.mid.last', ['1', '2']),
+          'console.log.mid.last'
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is same call expression with call expression args', () => {
+      expect(
+        parser.isSameCallExpression(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', ['hello world']),
+          ]),
+          'console.log'
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is not same call expression', () => {
+      expect(
+        parser.isSameCallExpression(
+          parser.createCallExpression('console.log', ['hello world']),
+          'console.error'
+        )
+      ).toBeFalsy()
+    })
+
+    test('test is not same deep call expression', () => {
+      expect(
+        parser.isSameCallExpression(
+          parser.createCallExpression('console.log.mid.last', ['1', '2']),
+          'console.log.mid.last.error'
+        )
+      ).toBeFalsy()
+    })
+
+    test('test callExpression is not Expression', () => {
+      expect(parser.isSameCallExpression(123, '123')).toBeFalsy()
+    })
+  })
+
+  describe('test isStrictSameCallExpression', () => {
+    test('test is strict same call expression', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', ['hello world']),
+          'console.log',
+          ['hello world']
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is strict same deep call expression', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log.mid.last', ['1', '2']),
+          'console.log.mid.last',
+          ['1', '2']
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is strict same call expression with call expression args', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', ['hello world']),
+          ]),
+          'console.log',
+          [parser.createCallExpression('console.log', ['hello world'])]
+        )
+      ).toBeTruthy()
+    })
+
+    test('test is not strict same call expression', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', ['hello world']),
+          'console.log',
+          ['hello world', '1']
+        )
+      ).toBeFalsy()
+    })
+
+    test('test is not strict same deep call expression', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log.mid.last', ['1', '2']),
+          'console.log.mid.last',
+          ['1']
+        )
+      ).toBeFalsy()
+    })
+
+    test('test is not strict same call expression with call expression args', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', ['hello world']),
+          ]),
+          'console.log',
+          [parser.createCallExpression('console.log', ['hello world!'])]
+        )
+      ).toBeFalsy()
+    })
+
+    test('test is strict same call expression with complex args', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', [
+              'hello world',
+              parser.createCallExpression('console.log', ['hello world!']),
+            ]),
+            parser.createCallExpression('console.log', ['hello world!']),
+          ]),
+          'console.log',
+          [
+            parser.createCallExpression('console.log', [
+              'hello world',
+              parser.createCallExpression('console.log', ['hello world!']),
+            ]),
+            parser.createCallExpression('console.log', ['hello world!']),
+          ]
+        )
+      ).toBeTruthy()
+    })
+
+    test('test callExpression is not Expression', () => {
+      expect(parser.isStrictSameCallExpression(123, '123')).toBeFalsy()
+    })
+
+    test('test args length is not equal', () => {
+      expect(
+        parser.isStrictSameCallExpression(
+          parser.createCallExpression('console.log', ['hello world']),
+          'console.log'
+        )
+      ).toBeFalsy()
+    })
+  })
+
+  describe('test getCallExpressionArgs', () => {
+    test('test get call expression args', () => {
+      expect(
+        parser.getCallExpressionArgs(
+          parser.createCallExpression('console.log', ['hello world'])
+        )
+      ).toEqual(['hello world'])
+    })
+
+    test('test get call expression args with call expression args', () => {
+      expect(
+        parser.getCallExpressionArgs(
+          parser.createCallExpression('console.log', [
+            parser.createCallExpression('console.log', ['hello world']),
+          ])
+        )
+      ).toEqual([parser.createCallExpression('console.log', ['hello world'])])
+    })
+
+    test('test get call expression args with complex args', () => {
+      expect(
+        parser.getCallExpressionArgs(
+          parser.createCallExpression('console.log', [
+            1,
+            '2',
+            parser.createCallExpression('console.log', [
+              'hello world',
+              parser.createCallExpression('console.log', ['hello world!']),
+            ]),
+            parser.createCallExpression('console.log', ['hello world!']),
+          ])
+        )
+      ).toEqual([
+        1,
+        '2',
+        parser.createCallExpression('console.log', [
+          'hello world',
+          parser.createCallExpression('console.log', ['hello world!']),
+        ]),
+        parser.createCallExpression('console.log', ['hello world!']),
+      ])
+    })
+
+    test('test callExpression is not Expression', () => {
+      expect(parser.getCallExpressionArgs(123)).toStrictEqual([])
     })
   })
 })

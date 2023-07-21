@@ -47,6 +47,10 @@ export function recursiveAssign(node, value: ParserValueType) {
     )
   } else {
     if (typeof value === 'object' && t.isObjectExpression(node)) {
+      if (t.isCallExpression(value)) {
+        node.value = value
+        return node
+      }
       for (const key of Object.keys(value)) {
         const val = value[key]
         if (Array.isArray(val)) {
@@ -58,15 +62,31 @@ export function recursiveAssign(node, value: ParserValueType) {
         } else if (typeof val === 'object') {
           const property = t.objectProperty(
             t.identifier(key),
-            recursiveAssign(t.objectExpression([]), val)
+            t.isCallExpression(val)
+              ? val
+              : recursiveAssign(t.objectExpression([]), val)
           )
-          node.properties.push(property)
+          if (node.properties.some((prop) => prop.key.name === key)) {
+            const index = node.properties.findIndex(
+              (prop) => prop.key.name === key
+            )
+            node.properties[index] = property
+          } else {
+            node.properties.push(property)
+          }
         } else {
           const property = t.objectProperty(
             t.identifier(key),
             t.valueToNode(val)
           )
-          node.properties.push(property)
+          if (node.properties.some((prop) => prop.key.name === key)) {
+            const index = node.properties.findIndex(
+              (prop) => prop.key.name === key
+            )
+            node.properties[index] = property
+          } else {
+            node.properties.push(property)
+          }
         }
       }
     } else {
@@ -170,10 +190,10 @@ export function requireHandler(
 }
 
 export function createCallExpressionHandler(
-  key: string,
+  name: string,
   args?: ParserValueType[]
 ): t.CallExpression {
-  const keyProperties = key.split('.')
+  const keyProperties = name.split('.')
   const callee = keyProperties.reduce((acc, prop) => {
     if (acc) {
       return t.memberExpression(acc, t.identifier(prop))
@@ -184,8 +204,76 @@ export function createCallExpressionHandler(
 
   const callExpression = t.callExpression(
     callee,
-    args.map((arg) => t.valueToNode(arg))
+    args.map((arg) => (t.isCallExpression(arg) ? arg : t.valueToNode(arg)))
   )
 
   return callExpression
+}
+
+function getCalleeFullName(callee: t.MemberExpression | t.Identifier): string {
+  if (t.isIdentifier(callee)) {
+    return callee.name
+  }
+  return getCalleeFullName(callee.object) + '.' + callee.property.name
+}
+
+export function isStrictSameCallExpression(
+  callExpression: t.Expression,
+  name: string,
+  args?: ParserValueType[]
+): boolean {
+  if (!t.isCallExpression(callExpression)) {
+    return false
+  }
+
+  if (args && args.length !== callExpression.arguments.length) {
+    return false
+  }
+
+  return (
+    getCalleeFullName(callExpression.callee) === name &&
+    Array.isArray(callExpression.arguments) &&
+    callExpression.arguments.every((arg, index) => {
+      if (!args) {
+        return t.isIdentifier(arg)
+      } else {
+        if (t.isCallExpression(arg)) {
+          return isStrictSameCallExpression(
+            arg,
+            getCalleeFullName(args[index].callee),
+            getCallExpressionArgs(args[index])
+          )
+        }
+
+        return t.isLiteral(arg) && arg.value === args[index]
+      }
+    })
+  )
+}
+
+export function isSameCallExpression(
+  callExpression: t.Expression,
+  name: string
+): boolean {
+  if (!t.isCallExpression(callExpression)) {
+    return false
+  }
+
+  return getCalleeFullName(callExpression.callee) === name
+}
+
+export function getCallExpressionArgs(
+  callExpression: t.Expression
+): ParserValueType[] {
+  if (!t.isCallExpression(callExpression)) {
+    return []
+  }
+
+  return callExpression.arguments.map((arg) => {
+    if (t.isLiteral(arg)) {
+      return arg.value
+    } else {
+      return arg
+    }
+  })
 }
