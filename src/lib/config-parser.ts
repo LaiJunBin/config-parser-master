@@ -7,7 +7,7 @@ export class ConfigParser {
   static #configs = {}
   static #validates = []
 
-  static parse(file: string): BaseConfig {
+  static parse(file: string, skipCheck = false): BaseConfig {
     if (!fs.existsSync(file)) {
       throw new Error(`File ${file} is not exists.`)
     }
@@ -31,14 +31,14 @@ export class ConfigParser {
     }
 
     try {
-      return new config(file)
+      return new config(file, skipCheck)
     } catch (e) {
       throw new Error(`Can't parser file: ${file}\n${e}`)
     }
   }
 
-  static parseJs(file: string): BaseJSConfig {
-    return this.parse(file) as BaseJSConfig
+  static parseJs(file: string, skipCheck = false): BaseJSConfig {
+    return this.parse(file, skipCheck) as BaseJSConfig
   }
 
   static register(ext, config) {

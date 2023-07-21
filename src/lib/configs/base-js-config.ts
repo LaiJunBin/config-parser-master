@@ -26,7 +26,27 @@ export class BaseJSConfig extends BaseConfig {
     return this
   }
 
-  createCallExpression(key: string, args?: ParserValueType[]) {
-    return this.parser.createCallExpression(key, args)
+  createCallExpression(name: string, args?: ParserValueType[]) {
+    return this.parser.createCallExpression(name, args)
+  }
+
+  isStrictSameCallExpression(
+    callExpression: unknown,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return this.parser.isStrictSameCallExpression(callExpression, name, args)
+  }
+
+  isSameCallExpression(callExpression: unknown, name: string): boolean {
+    return this.parser.isSameCallExpression(callExpression, name)
+  }
+
+  getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
+    return this.parser.getCallExpressionArgs(callExpression)
+  }
+
+  isContainCallExpression(name: string, args?: ParserValueType[]): boolean {
+    return this.parser.isContainCallExpression(this._content, name, args)
   }
 }

@@ -3,10 +3,14 @@ import fs from 'fs'
 
 export class BaseConfig {
   protected _content: string
-  constructor(private _file: string, protected parser: Parser) {
+  constructor(
+    private _file: string,
+    protected parser: Parser,
+    skipCheck = false
+  ) {
     this._content = fs.readFileSync(_file, 'utf-8')
 
-    if (!this.parser.check(this._content)) {
+    if (!skipCheck && !this.parser.check(this._content)) {
       throw new Error('Invalid config content.')
     }
   }

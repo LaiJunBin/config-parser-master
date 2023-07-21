@@ -1,6 +1,6 @@
 {
   "name": "config-parser-master",
-  "version": "0.1.3",
+  "version": "0.3.0",
   "description": "This is a simple config parser that can read and write to a config file.",
   "repository": {
     "type": "git",

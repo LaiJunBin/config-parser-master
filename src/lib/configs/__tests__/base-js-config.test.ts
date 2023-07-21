@@ -1,4 +1,4 @@
-import { IJSParser } from '../../parsers'
+import { IJSParser, ParserValueType } from '../../parsers'
 import fs from 'fs'
 import { BaseJSConfig } from '../base-js-config'
 
@@ -37,6 +37,28 @@ class TestParser implements IJSParser {
 
   createCallExpression(key: string, args?: any[]) {
     return null
+  }
+
+  isStrictSameCallExpression(
+    callExpression: unknown,
+    key: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return true
+  }
+  isSameCallExpression(callExpression: unknown, key: string): boolean {
+    return true
+  }
+  getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
+    return []
+  }
+
+  isContainCallExpression(
+    content: string,
+    key: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return true
   }
 }
 
@@ -116,5 +138,39 @@ describe('test base js config', () => {
       'test1'
     )
     expect(config.createCallExpression('test')).toBe('test1')
+  })
+
+  test('test is strict same call expression', () => {
+    const config = new TestConfig('file')
+    vi.spyOn(
+      TestParser.prototype,
+      'isStrictSameCallExpression'
+    ).mockReturnValueOnce(true)
+    expect(config.isStrictSameCallExpression('test', 'test')).toBe(true)
+  })
+
+  test('test is same call expression', () => {
+    const config = new TestConfig('file')
+    vi.spyOn(TestParser.prototype, 'isSameCallExpression').mockReturnValueOnce(
+      true
+    )
+    expect(config.isSameCallExpression('test', 'test')).toBe(true)
+  })
+
+  test('test get call expression args', () => {
+    const config = new TestConfig('file')
+    vi.spyOn(TestParser.prototype, 'getCallExpressionArgs').mockReturnValueOnce(
+      []
+    )
+    expect(config.getCallExpressionArgs('test')).toEqual([])
+  })
+
+  test('test is contain call expression', () => {
+    const config = new TestConfig('file')
+    vi.spyOn(
+      TestParser.prototype,
+      'isContainCallExpression'
+    ).mockReturnValueOnce(true)
+    expect(config.isContainCallExpression('test')).toBe(true)
   })
 })

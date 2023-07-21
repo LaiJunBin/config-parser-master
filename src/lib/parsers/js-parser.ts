@@ -5,8 +5,12 @@ import traverse from '@babel/traverse'
 import * as t from '@babel/types'
 import {
   createCallExpressionHandler,
+  getCallExpressionArgs,
   getObjectValuesFromNode,
   importHandler,
+  isContainCallExpression,
+  isSameCallExpression,
+  isStrictSameCallExpression,
   recursiveAssign,
   requireHandler,
 } from './js-utils'
@@ -247,9 +251,32 @@ export class JSParser implements IJSParser {
   }
 
   createCallExpression(
-    key: string,
+    name: string,
     args: ParserValueType[] = []
   ): t.CallExpression {
-    return createCallExpressionHandler(key, args)
+    return createCallExpressionHandler(name, args)
+  }
+
+  isStrictSameCallExpression(
+    callExpression: unknown,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return isStrictSameCallExpression(callExpression, name, args)
+  }
+
+  isSameCallExpression(callExpression: unknown, name: string): boolean {
+    return isSameCallExpression(callExpression, name)
+  }
+  getCallExpressionArgs(callExpression: unknown): ParserValueType[] {
+    return getCallExpressionArgs(callExpression)
+  }
+
+  isContainCallExpression(
+    content: string,
+    name: string,
+    args?: ParserValueType[]
+  ): boolean {
+    return isContainCallExpression(content, name, args)
   }
 }
