@@ -33,6 +33,9 @@ export function removeComments(str: string): string {
 }
 
 export function jsObjectToJSONFormat(obj) {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+    return obj
+  }
   const result = {}
   for (const key in obj) {
     const quoteKey = `"${key}"`

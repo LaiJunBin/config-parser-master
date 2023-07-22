@@ -249,6 +249,34 @@ describe('test json config', () => {
 }`
       )
     })
+
+    test('test put array', async () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
+            "test": {
+                "a": 1,
+                "b": 2,
+                "c": 3
+            }
+      }`)
+      const config = new JSONConfig('test')
+      config.put('test.d', [1, 2, 3])
+      expect(config.get('test.d')).toStrictEqual([1, 2, 3])
+
+      config.put('array', [1, 2, 3])
+      expect(config.get('array')).toStrictEqual([1, 2, 3])
+
+      expect(config.content).toBe(
+        `{
+  "test": {
+    "a": 1,
+    "b": 2,
+    "c": 3,
+    "d": [1, 2, 3]
+  },
+  "array": [1, 2, 3]
+}`
+      )
+    })
   })
 
   describe('test delete', () => {
