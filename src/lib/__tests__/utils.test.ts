@@ -1,4 +1,4 @@
-import { removeComments, splitByDot } from '../utils'
+import { jsObjectToJSONFormat, removeComments, splitByDot } from '../utils'
 
 describe('test utils', () => {
   describe('test splitByDot', () => {
@@ -169,6 +169,54 @@ describe('test utils', () => {
                 "a": "a"
             }
       }`)
+    })
+  })
+
+  describe('test jsObjectToJSONFormat', () => {
+    test('test jsObjectToJSONFormat', () => {
+      expect(jsObjectToJSONFormat({ test: 'test' })).toEqual({
+        '"test"': 'test',
+      })
+      expect(jsObjectToJSONFormat({ test: { test: 'test' } })).toEqual({
+        '"test"': {
+          '"test"': 'test',
+        },
+      })
+      expect(
+        jsObjectToJSONFormat({ test: { test: { test: 'test' } } })
+      ).toEqual({
+        '"test"': {
+          '"test"': {
+            '"test"': 'test',
+          },
+        },
+      })
+
+      expect(
+        jsObjectToJSONFormat({
+          test: { test: { test: 'test' } },
+          test1: { test1: { test1: 'test1' } },
+          number: 1,
+          boolean: true,
+          null: null,
+          array: [1, 2, 3],
+        })
+      ).toEqual({
+        '"test"': {
+          '"test"': {
+            '"test"': 'test',
+          },
+        },
+        '"test1"': {
+          '"test1"': {
+            '"test1"': 'test1',
+          },
+        },
+        '"number"': 1,
+        '"boolean"': true,
+        '"null"': null,
+        '"array"': [1, 2, 3],
+      })
     })
   })
 })

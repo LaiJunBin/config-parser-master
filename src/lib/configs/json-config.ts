@@ -1,5 +1,6 @@
 import { ParserValueType } from '../parsers'
 import { JSParser } from '../parsers/js-parser'
+import { jsObjectToJSONFormat } from '../utils'
 import { BaseConfig } from './base-config'
 
 export class JSONConfig extends BaseConfig {
@@ -21,6 +22,9 @@ export class JSONConfig extends BaseConfig {
 
   put(key: string, value: ParserValueType): BaseConfig {
     key = key.replace(/([a-zA-Z0-9_]+)/g, '"$1"')
+    if (typeof value === 'object') {
+      value = jsObjectToJSONFormat(value)
+    }
     return super.put(key, value)
   }
 
@@ -36,9 +40,7 @@ export class JSONConfig extends BaseConfig {
   }
 
   async save(): Promise<void> {
-    this._content = this._content
-      .replace(/^export default /, '')
-      .replace(/;$/, '')
+    this._content = this.content
     super.save()
   }
 }

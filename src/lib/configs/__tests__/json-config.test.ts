@@ -369,5 +369,37 @@ describe('test json config', () => {
 }`
       )
     })
+
+    test('test put object save correct format', async () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce('{}')
+      vi.spyOn(fs, 'writeFileSync').mockReturnValueOnce(undefined)
+      const config = new JSONConfig('test')
+      const parser = new JSONParser()
+
+      expect(
+        config.put('test', {
+          test: 'test',
+          parent: {
+            test: 'test',
+          },
+        })
+      ).toBe(config)
+      expect(config.get('test.test')).toBe('test')
+
+      expect(() => parser.check(config.content)).not.toThrow()
+
+      await config.save()
+      expect(fs.writeFileSync).toBeCalledWith(
+        'test',
+        `{
+  "test": {
+    "test": "test",
+    "parent": {
+      "test": "test"
+    }
+  }
+}`
+      )
+    })
   })
 })

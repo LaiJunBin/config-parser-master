@@ -31,3 +31,20 @@ export function removeComments(str: string): string {
     .map((line) => line.replace(/\s+$/, ''))
     .join('\n')
 }
+
+export function jsObjectToJSONFormat(obj) {
+  const result = {}
+  for (const key in obj) {
+    const quoteKey = `"${key}"`
+    if (
+      typeof obj[key] === 'object' &&
+      obj[key] !== null &&
+      !Array.isArray(obj[key])
+    ) {
+      result[quoteKey] = jsObjectToJSONFormat(obj[key])
+    } else {
+      result[quoteKey] = obj[key]
+    }
+  }
+  return result
+}
