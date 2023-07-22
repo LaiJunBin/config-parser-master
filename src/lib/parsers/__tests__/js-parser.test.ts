@@ -922,4 +922,45 @@ describe('test js parser', () => {
       ).toBeFalsy()
     })
   })
+
+  describe('test delete include comments', () => {
+    test('test delete include comments', () => {
+      expect(
+        parser.delete(
+          exportSyntax + ' { a: 1, /* test */ b: 2 // test \n }',
+          'a'
+        ) as unknown as string
+      ).toBe(
+        exportSyntax +
+          `{
+  /* test */b: 2 // test 
+};`
+      )
+    })
+
+    test('test delete include complex comments', () => {
+      expect(
+        parser.delete(
+          exportSyntax +
+            `{
+  a: 1, /* test */ b: 2, // test
+  /* test */ c: 3, // test
+  d: 4, /* test */ e: 5 // test
+}`,
+          'a'
+        ) as unknown as string
+      ).toBe(
+        exportSyntax +
+          `{
+  /* test */b: 2,
+  // test
+  /* test */
+  c: 3,
+  // test
+  d: 4,
+  /* test */e: 5 // test
+};`
+      )
+    })
+  })
 })

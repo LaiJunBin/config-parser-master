@@ -22,3 +22,12 @@ export function splitByDot(str: string): string[] {
   result.push(temp)
   return result
 }
+
+export function removeComments(str: string): string {
+  return str
+    .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => line.replace(/\s+$/, ''))
+    .join('\n')
+}

@@ -1,4 +1,4 @@
-import { splitByDot } from '../utils'
+import { removeComments, splitByDot } from '../utils'
 
 describe('test utils', () => {
   describe('test splitByDot', () => {
@@ -57,6 +57,118 @@ describe('test utils', () => {
         `test.'test1'`,
         'test2',
       ])
+    })
+  })
+
+  describe('test removeComments', () => {
+    test('test removeComments in single line', () => {
+      expect(removeComments('test')).toBe('test')
+      expect(removeComments('test//test')).toBe('test')
+      expect(removeComments('test/*test*/')).toBe('test')
+      expect(removeComments('test/*test*/test')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test/*test*/')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test/*test*/test')).toBe(
+        'testtest'
+      )
+      expect(removeComments('test/*test*/test//test/*test*/test/*test*/')).toBe(
+        'testtest'
+      )
+      expect(
+        removeComments('test/*test*/test//test/*test*/test/*test*/test')
+      ).toBe('testtest')
+      expect(removeComments('test/*test//test*/test')).toBe('testtest')
+      expect(removeComments('test/*test//test*/test/*test//test*/test')).toBe(
+        'testtesttest'
+      )
+      expect(
+        removeComments('test/*test//test*/test/*test//test*/test/*test//test*/')
+      ).toBe('testtesttest')
+      expect(
+        removeComments(
+          'test/*test//test*/test/*test//test*/test/*test//test*/test'
+        )
+      ).toBe('testtesttesttest')
+      expect(
+        removeComments(
+          'test/*test//test*/test/*test//test*/test/*test//test*/test/*test//test*/'
+        )
+      ).toBe('testtesttesttest')
+    })
+
+    test('test removeComments in multi line', () => {
+      expect(
+        removeComments(`{
+            // test
+            "test": "test"
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test"
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test  
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test
+            // test
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test
+            // test
+            /* test */
+            "a": "a"
+      }`)
+      ).toBe(`{
+            "test": "test"
+            "a": "a"
+      }`)
+
+      expect(
+        removeComments(`{ 
+            /* test */
+            "test": "test" // test
+            // test
+            /* test */
+            "a": "a" /* test */
+            "parent": {
+                "test": "test" // test
+                // test
+                /* test */
+                "a": "a"
+            }
+      }`)
+      ).toBe(`{
+            "test": "test"
+            "a": "a"
+            "parent": {
+                "test": "test"
+                "a": "a"
+            }
+      }`)
     })
   })
 })

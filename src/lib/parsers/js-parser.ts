@@ -201,7 +201,33 @@ function deleteKeyByPath(content: string, key: string): string {
           if (propertyIndex >= 0) {
             const property = currentObject[propertyIndex]
             if (i === keyProperties.length - 1) {
+              const trailingComments =
+                currentObject[propertyIndex].trailingComments ?? []
+              const leadingComments =
+                currentObject[propertyIndex].leadingComments ?? []
+
               currentObject.splice(propertyIndex, 1)
+              if (propertyIndex > 0) {
+                currentObject[propertyIndex - 1].trailingComments =
+                  trailingComments
+                currentObject[propertyIndex - 1].leadingComments =
+                  leadingComments
+              } else if (currentObject.length > 0) {
+                currentObject[0].leadingComments = currentObject[0]
+                  .leadingComments
+                  ? [...leadingComments, ...currentObject[0].leadingComments]
+                  : leadingComments
+                currentObject[0].trailingComments = currentObject[0]
+                  .trailingComments
+                  ? [...trailingComments, ...currentObject[0].trailingComments]
+                  : trailingComments
+              } else {
+                currentObject.push(t.noop())
+                currentObject[currentObject.length - 1].trailingComments =
+                  trailingComments
+                currentObject[currentObject.length - 1].leadingComments =
+                  leadingComments
+              }
               break
             } else if (t.isObjectExpression(property.value)) {
               currentObject = property.value.properties

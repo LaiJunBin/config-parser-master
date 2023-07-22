@@ -228,7 +228,44 @@ function deleteKeyByPath(content: string, key: string): string {
           }
 
           if (propertyToDeleteIndex >= 0) {
+            const trailingComments =
+              currentObject.properties[propertyToDeleteIndex]
+                .trailingComments ?? []
+            const leadingComments =
+              currentObject.properties[propertyToDeleteIndex].leadingComments ??
+              []
             currentObject.properties.splice(propertyToDeleteIndex, 1)
+            if (propertyToDeleteIndex > 0) {
+              currentObject.properties[
+                propertyToDeleteIndex - 1
+              ].trailingComments = trailingComments
+              currentObject.properties[
+                propertyToDeleteIndex - 1
+              ].leadingComments = leadingComments
+            } else if (currentObject.properties.length > 0) {
+              currentObject.properties[0].leadingComments = currentObject
+                .properties[0].leadingComments
+                ? [
+                    ...leadingComments,
+                    ...currentObject.properties[0].leadingComments,
+                  ]
+                : leadingComments
+              currentObject.properties[0].trailingComments = currentObject
+                .properties[0].trailingComments
+                ? [
+                    ...trailingComments,
+                    ...currentObject.properties[0].trailingComments,
+                  ]
+                : trailingComments
+            } else {
+              currentObject.properties.push(t.noop())
+              currentObject.properties[
+                currentObject.properties.length - 1
+              ].trailingComments = trailingComments
+              currentObject.properties[
+                currentObject.properties.length - 1
+              ].leadingComments = leadingComments
+            }
           }
         }
       }
