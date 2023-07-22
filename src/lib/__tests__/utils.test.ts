@@ -1,4 +1,9 @@
-import { splitByDot } from '../utils'
+import {
+  jsObjectToJSONFormat,
+  removeComments,
+  splitByDot,
+  unwrapQuotes,
+} from '../utils'
 
 describe('test utils', () => {
   describe('test splitByDot', () => {
@@ -57,6 +62,190 @@ describe('test utils', () => {
         `test.'test1'`,
         'test2',
       ])
+    })
+  })
+
+  describe('test removeComments', () => {
+    test('test removeComments in single line', () => {
+      expect(removeComments('test')).toBe('test')
+      expect(removeComments('test//test')).toBe('test')
+      expect(removeComments('test/*test*/')).toBe('test')
+      expect(removeComments('test/*test*/test')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test/*test*/')).toBe('testtest')
+      expect(removeComments('test/*test*/test//test/*test*/test')).toBe(
+        'testtest'
+      )
+      expect(removeComments('test/*test*/test//test/*test*/test/*test*/')).toBe(
+        'testtest'
+      )
+      expect(
+        removeComments('test/*test*/test//test/*test*/test/*test*/test')
+      ).toBe('testtest')
+      expect(removeComments('test/*test//test*/test')).toBe('testtest')
+      expect(removeComments('test/*test//test*/test/*test//test*/test')).toBe(
+        'testtesttest'
+      )
+      expect(
+        removeComments('test/*test//test*/test/*test//test*/test/*test//test*/')
+      ).toBe('testtesttest')
+      expect(
+        removeComments(
+          'test/*test//test*/test/*test//test*/test/*test//test*/test'
+        )
+      ).toBe('testtesttesttest')
+      expect(
+        removeComments(
+          'test/*test//test*/test/*test//test*/test/*test//test*/test/*test//test*/'
+        )
+      ).toBe('testtesttesttest')
+    })
+
+    test('test removeComments in multi line', () => {
+      expect(
+        removeComments(`{
+            // test
+            "test": "test"
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test"
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test  
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test
+            // test
+      }`)
+      ).toBe(`{
+            "test": "test"
+      }`)
+
+      expect(
+        removeComments(`{
+            /* test */
+            "test": "test" // test
+            // test
+            /* test */
+            "a": "a"
+      }`)
+      ).toBe(`{
+            "test": "test"
+            "a": "a"
+      }`)
+
+      expect(
+        removeComments(`{ 
+            /* test */
+            "test": "test" // test
+            // test
+            /* test */
+            "a": "a" /* test */
+            "parent": {
+                "test": "test" // test
+                // test
+                /* test */
+                "a": "a"
+            }
+      }`)
+      ).toBe(`{
+            "test": "test"
+            "a": "a"
+            "parent": {
+                "test": "test"
+                "a": "a"
+            }
+      }`)
+    })
+  })
+
+  describe('test jsObjectToJSONFormat', () => {
+    test('test jsObjectToJSONFormat', () => {
+      expect(jsObjectToJSONFormat({ test: 'test' })).toEqual({
+        '"test"': 'test',
+      })
+      expect(jsObjectToJSONFormat({ test: { test: 'test' } })).toEqual({
+        '"test"': {
+          '"test"': 'test',
+        },
+      })
+      expect(
+        jsObjectToJSONFormat({ test: { test: { test: 'test' } } })
+      ).toEqual({
+        '"test"': {
+          '"test"': {
+            '"test"': 'test',
+          },
+        },
+      })
+
+      expect(
+        jsObjectToJSONFormat({
+          test: { test: { test: 'test' } },
+          test1: { test1: { test1: 'test1' } },
+          number: 1,
+          boolean: true,
+          null: null,
+          array: [1, 2, 3],
+        })
+      ).toEqual({
+        '"test"': {
+          '"test"': {
+            '"test"': 'test',
+          },
+        },
+        '"test1"': {
+          '"test1"': {
+            '"test1"': 'test1',
+          },
+        },
+        '"number"': 1,
+        '"boolean"': true,
+        '"null"': null,
+        '"array"': [1, 2, 3],
+      })
+    })
+  })
+
+  describe('test unwrapQuotes', () => {
+    test('test unwrapQuotes', () => {
+      expect(unwrapQuotes('"test"')).toBe('test')
+      expect(unwrapQuotes("'test'")).toBe('test')
+      expect(unwrapQuotes('"test')).toBe('"test')
+      expect(unwrapQuotes("'test")).toBe("'test")
+      expect(unwrapQuotes('test"')).toBe('test"')
+      expect(unwrapQuotes("test'")).toBe("test'")
+      expect(unwrapQuotes('test')).toBe('test')
+      expect(unwrapQuotes('')).toBe('')
+    })
+
+    test('test unwrap multi quotes', () => {
+      expect(unwrapQuotes(`""test""`)).toBe('test')
+      expect(unwrapQuotes(`''test''`)).toBe('test')
+      expect(unwrapQuotes(`"'test'"`)).toBe('test')
+      expect(unwrapQuotes(`'"test"'`)).toBe('test')
+      expect(unwrapQuotes(`"""test"""`)).toBe('test')
+      expect(unwrapQuotes(`'''test'''`)).toBe('test')
+      expect(unwrapQuotes(`""'test'""`)).toBe('test')
+      expect(unwrapQuotes(`''"test"''`)).toBe('test')
     })
   })
 })

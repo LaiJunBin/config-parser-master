@@ -3,6 +3,7 @@ import { ParserValueType } from '.'
 import * as t from '@babel/types'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
+import { unwrapQuotes } from '../utils'
 
 export function getObjectValuesFromNode(node) {
   const objectValues = {}
@@ -51,38 +52,48 @@ export function recursiveAssign(node, value: ParserValueType) {
         node.value = value
         return node
       }
-      for (const key of Object.keys(value)) {
+      for (let key of Object.keys(value)) {
         const val = value[key]
+        key = unwrapQuotes(key)
         if (Array.isArray(val)) {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             recursiveAssign(t.objectExpression([]), val).value
           )
-          node.properties.push(property)
+          const index = node.properties.findIndex(
+            (prop) => prop.key.name === key || prop.key.value === key
+          )
+
+          if (index !== -1) {
+            node.properties[index] = property
+          } else {
+            node.properties.push(property)
+          }
         } else if (typeof val === 'object') {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             t.isCallExpression(val)
               ? val
               : recursiveAssign(t.objectExpression([]), val)
           )
-          if (node.properties.some((prop) => prop.key.name === key)) {
-            const index = node.properties.findIndex(
-              (prop) => prop.key.name === key
-            )
+          const index = node.properties.findIndex(
+            (prop) => prop.key.name === key || prop.key.value === key
+          )
+          if (index !== -1) {
             node.properties[index] = property
           } else {
             node.properties.push(property)
           }
         } else {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             t.valueToNode(val)
           )
-          if (node.properties.some((prop) => prop.key.name === key)) {
-            const index = node.properties.findIndex(
-              (prop) => prop.key.name === key
-            )
+          const index = node.properties.findIndex(
+            (prop) => prop.key.name === key || prop.key.value === key
+          )
+
+          if (index !== -1) {
             node.properties[index] = property
           } else {
             node.properties.push(property)

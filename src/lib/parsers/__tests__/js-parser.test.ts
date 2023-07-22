@@ -697,7 +697,7 @@ describe('test js parser', () => {
             3,
           ])
           .replace(/\s+/g, ' ')
-      ).toBe(exportSyntax + `{ test: [1, console.log("hello world"), 3] };`)
+      ).toBe(exportSyntax + `{ "test": [1, console.log("hello world"), 3] };`)
     })
   })
 
@@ -920,6 +920,47 @@ describe('test js parser', () => {
       expect(
         parser.isContainCallExpression('console.log(123)', 'console.log', [456])
       ).toBeFalsy()
+    })
+  })
+
+  describe('test delete include comments', () => {
+    test('test delete include comments', () => {
+      expect(
+        parser.delete(
+          exportSyntax + ' { a: 1, /* test */ b: 2 // test \n }',
+          'a'
+        ) as unknown as string
+      ).toBe(
+        exportSyntax +
+          `{
+  /* test */b: 2 // test 
+};`
+      )
+    })
+
+    test('test delete include complex comments', () => {
+      expect(
+        parser.delete(
+          exportSyntax +
+            `{
+  a: 1, /* test */ b: 2, // test
+  /* test */ c: 3, // test
+  d: 4, /* test */ e: 5 // test
+}`,
+          'a'
+        ) as unknown as string
+      ).toBe(
+        exportSyntax +
+          `{
+  /* test */b: 2,
+  // test
+  /* test */
+  c: 3,
+  // test
+  d: 4,
+  /* test */e: 5 // test
+};`
+      )
     })
   })
 })

@@ -14,6 +14,7 @@ import {
   recursiveAssign,
   requireHandler,
 } from './js-utils'
+import { splitByDot, unwrapQuotes } from '../utils'
 
 function checkModuleExports(content: string): boolean {
   const ast = parse(content, {
@@ -56,7 +57,7 @@ function getValueByPath(content: string, key: string): ParserValueType {
   const ast = parse(content, {
     sourceType: 'module',
   })
-  const keyProperties = key.split('.')
+  const keyProperties = splitByDot(key)
   let value = null
 
   traverse(ast, {
@@ -72,11 +73,12 @@ function getValueByPath(content: string, key: string): ParserValueType {
           let propertyIndex = -1
 
           for (let i = 0; i < keyProperties.length; i++) {
-            const propertyName = keyProperties[i]
+            const propertyName = unwrapQuotes(keyProperties[i])
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
-                t.isIdentifier(prop.key, { name: propertyName }) ||
-                t.isLiteral(prop.key, { value: propertyName })
+                t.isIdentifier(prop.key, {
+                  name: propertyName,
+                }) || t.isLiteral(prop.key, { value: propertyName })
             )
 
             if (propertyIndex >= 0) {
@@ -119,7 +121,7 @@ function putValueByPath(
         t.isIdentifier(left.object, { name: 'module' }) &&
         t.isIdentifier(left.property, { name: 'exports' })
       ) {
-        const properties = key.split('.').map((prop) => t.identifier(prop))
+        const properties = splitByDot(key).map((prop) => t.identifier(prop))
 
         if (t.isObjectExpression(right) && properties.length > 0) {
           const objectProperties = right.properties
@@ -129,8 +131,10 @@ function putValueByPath(
             const property = properties[i]
             const propertyIndex = currentObject.findIndex(
               (objProp) =>
-                t.isIdentifier(objProp.key, { name: property.name }) ||
-                t.isLiteral(objProp.key, { value: property.name })
+                t.isIdentifier(objProp.key, {
+                  name: unwrapQuotes(property.name),
+                }) ||
+                t.isLiteral(objProp.key, { value: unwrapQuotes(property.name) })
             )
 
             if (propertyIndex >= 0) {
@@ -142,7 +146,7 @@ function putValueByPath(
               }
             } else {
               const newProperty = t.objectProperty(
-                property,
+                t.identifier(`"${unwrapQuotes(property.name)}"`),
                 t.objectExpression([])
               )
               currentObject.push(newProperty)
@@ -153,8 +157,12 @@ function putValueByPath(
           const lastProperty = properties[properties.length - 1]
           const lastPropertyIndex = currentObject.findIndex(
             (objProp) =>
-              t.isIdentifier(objProp.key, { name: lastProperty.name }) ||
-              t.isLiteral(objProp.key, { value: lastProperty.name })
+              t.isIdentifier(objProp.key, {
+                name: unwrapQuotes(lastProperty.name),
+              }) ||
+              t.isLiteral(objProp.key, {
+                value: unwrapQuotes(lastProperty.name),
+              })
           )
 
           if (lastPropertyIndex >= 0) {
@@ -172,7 +180,7 @@ function putValueByPath(
           } else {
             const newValue = recursiveAssign(t.objectExpression([]), value)
             const newProperty = t.objectProperty(
-              lastProperty,
+              t.identifier(`"${unwrapQuotes(lastProperty.name)}"`),
               newValue.value ?? newValue
             )
             currentObject.push(newProperty)
@@ -190,7 +198,7 @@ function deleteKeyByPath(content: string, key: string): string {
   const ast = parse(content, {
     sourceType: 'module',
   })
-  const keyProperties = key.split('.')
+  const keyProperties = splitByDot(key)
 
   traverse(ast, {
     AssignmentExpression(path) {
@@ -206,11 +214,12 @@ function deleteKeyByPath(content: string, key: string): string {
           let propertyToDeleteIndex = -1
 
           for (let i = 0; i < keyProperties.length; i++) {
-            const propertyName = keyProperties[i]
+            const propertyName = unwrapQuotes(keyProperties[i])
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
-                t.isIdentifier(prop.key, { name: propertyName }) ||
-                t.isLiteral(prop.key, { value: propertyName })
+                t.isIdentifier(prop.key, {
+                  name: propertyName,
+                }) || t.isLiteral(prop.key, { value: propertyName })
             )
 
             if (propertyIndex >= 0) {
@@ -228,7 +237,44 @@ function deleteKeyByPath(content: string, key: string): string {
           }
 
           if (propertyToDeleteIndex >= 0) {
+            const trailingComments =
+              currentObject.properties[propertyToDeleteIndex]
+                .trailingComments ?? []
+            const leadingComments =
+              currentObject.properties[propertyToDeleteIndex].leadingComments ??
+              []
             currentObject.properties.splice(propertyToDeleteIndex, 1)
+            if (propertyToDeleteIndex > 0) {
+              currentObject.properties[
+                propertyToDeleteIndex - 1
+              ].trailingComments = trailingComments
+              currentObject.properties[
+                propertyToDeleteIndex - 1
+              ].leadingComments = leadingComments
+            } else if (currentObject.properties.length > 0) {
+              currentObject.properties[0].leadingComments = currentObject
+                .properties[0].leadingComments
+                ? [
+                    ...leadingComments,
+                    ...currentObject.properties[0].leadingComments,
+                  ]
+                : leadingComments
+              currentObject.properties[0].trailingComments = currentObject
+                .properties[0].trailingComments
+                ? [
+                    ...trailingComments,
+                    ...currentObject.properties[0].trailingComments,
+                  ]
+                : trailingComments
+            } else {
+              currentObject.properties.push(t.noop())
+              currentObject.properties[
+                currentObject.properties.length - 1
+              ].trailingComments = trailingComments
+              currentObject.properties[
+                currentObject.properties.length - 1
+              ].leadingComments = leadingComments
+            }
           }
         }
       }
