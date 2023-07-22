@@ -3,6 +3,7 @@ import { ParserValueType } from '.'
 import * as t from '@babel/types'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
+import { unwrapQuotes } from '../utils'
 
 export function getObjectValuesFromNode(node) {
   const objectValues = {}
@@ -66,10 +67,11 @@ export function recursiveAssign(node, value: ParserValueType) {
               ? val
               : recursiveAssign(t.objectExpression([]), val)
           )
-          if (node.properties.some((prop) => prop.key.name === key)) {
-            const index = node.properties.findIndex(
-              (prop) => prop.key.name === key
-            )
+          const index = node.properties.findIndex(
+            (prop) =>
+              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+          )
+          if (index !== -1) {
             node.properties[index] = property
           } else {
             node.properties.push(property)
@@ -79,10 +81,12 @@ export function recursiveAssign(node, value: ParserValueType) {
             t.identifier(key),
             t.valueToNode(val)
           )
-          if (node.properties.some((prop) => prop.key.name === key)) {
-            const index = node.properties.findIndex(
-              (prop) => prop.key.name === key
-            )
+          const index = node.properties.findIndex(
+            (prop) =>
+              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+          )
+
+          if (index !== -1) {
             node.properties[index] = property
           } else {
             node.properties.push(property)

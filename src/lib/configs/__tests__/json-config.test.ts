@@ -207,6 +207,48 @@ describe('test json config', () => {
         '{\n  "test": {\n    "child": {\n      "test": "test",\n      "parent": {\n        "test": "test"\n      }\n    }\n  }\n}'
       )
     })
+
+    test('test put object to same child key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(
+        `{
+            "test": {
+                "a": 1,
+                "b": 2,
+                "c": 3
+            }
+        }`
+      )
+      const config = new JSONConfig('test')
+      const parser = new JSONParser()
+
+      expect(
+        config.put('test', {
+          a: 11,
+          c: 33,
+          d: 44,
+        })
+      ).toBe(config)
+
+      expect(config.get('test.a')).toBe(11)
+      expect(config.get('test.b')).toBe(2)
+      expect(config.get('test.c')).toBe(33)
+      expect(config.get('test.d')).toBe(44)
+      expect(parser.get(config.content, 'test.a')).toBe(11)
+      expect(parser.get(config.content, 'test.b')).toBe(2)
+      expect(parser.get(config.content, 'test.c')).toBe(33)
+      expect(parser.get(config.content, 'test.d')).toBe(44)
+
+      expect(config.content).toBe(
+        `{
+  "test": {
+    "a": 11,
+    "b": 2,
+    "c": 33,
+    "d": 44
+  }
+}`
+      )
+    })
   })
 
   describe('test delete', () => {
