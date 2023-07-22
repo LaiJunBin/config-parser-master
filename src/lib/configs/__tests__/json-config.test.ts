@@ -298,6 +298,33 @@ describe('test json config', () => {
       )
     })
 
+    test('test put object in array', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
+                "test": {
+                    "a": 1,
+                    "b": 2,
+                    "c": 3
+                }
+        }`)
+      const config = new JSONConfig('test')
+      config.put('test.d', [{ a: 1 }, { b: 2 }])
+      expect(config.get('test.d')).toStrictEqual([{ a: 1 }, { b: 2 }])
+      expect(config.content).toBe(
+        `{
+  "test": {
+    "a": 1,
+    "b": 2,
+    "c": 3,
+    "d": [{
+      "a": 1
+    }, {
+      "b": 2
+    }]
+  }
+}`
+      )
+    })
+
     test('test put quote key', () => {
       vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
             "test": 1

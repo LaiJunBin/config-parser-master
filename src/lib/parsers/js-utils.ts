@@ -52,16 +52,16 @@ export function recursiveAssign(node, value: ParserValueType) {
         node.value = value
         return node
       }
-      for (const key of Object.keys(value)) {
+      for (let key of Object.keys(value)) {
         const val = value[key]
+        key = unwrapQuotes(key)
         if (Array.isArray(val)) {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             recursiveAssign(t.objectExpression([]), val).value
           )
           const index = node.properties.findIndex(
-            (prop) =>
-              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+            (prop) => prop.key.name === key || prop.key.value === key
           )
 
           if (index !== -1) {
@@ -71,14 +71,13 @@ export function recursiveAssign(node, value: ParserValueType) {
           }
         } else if (typeof val === 'object') {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             t.isCallExpression(val)
               ? val
               : recursiveAssign(t.objectExpression([]), val)
           )
           const index = node.properties.findIndex(
-            (prop) =>
-              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+            (prop) => prop.key.name === key || prop.key.value === key
           )
           if (index !== -1) {
             node.properties[index] = property
@@ -87,12 +86,11 @@ export function recursiveAssign(node, value: ParserValueType) {
           }
         } else {
           const property = t.objectProperty(
-            t.identifier(key),
+            t.identifier(`"${key}"`),
             t.valueToNode(val)
           )
           const index = node.properties.findIndex(
-            (prop) =>
-              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+            (prop) => prop.key.name === key || prop.key.value === key
           )
 
           if (index !== -1) {

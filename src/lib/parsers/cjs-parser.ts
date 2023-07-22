@@ -73,13 +73,12 @@ function getValueByPath(content: string, key: string): ParserValueType {
           let propertyIndex = -1
 
           for (let i = 0; i < keyProperties.length; i++) {
-            const propertyName = keyProperties[i]
+            const propertyName = unwrapQuotes(keyProperties[i])
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
                 t.isIdentifier(prop.key, {
-                  name: unwrapQuotes(propertyName),
-                }) ||
-                t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
+                  name: propertyName,
+                }) || t.isLiteral(prop.key, { value: propertyName })
             )
 
             if (propertyIndex >= 0) {
@@ -147,7 +146,7 @@ function putValueByPath(
               }
             } else {
               const newProperty = t.objectProperty(
-                t.identifier(`"${property.name}"`),
+                t.identifier(`"${unwrapQuotes(property.name)}"`),
                 t.objectExpression([])
               )
               currentObject.push(newProperty)
@@ -181,7 +180,7 @@ function putValueByPath(
           } else {
             const newValue = recursiveAssign(t.objectExpression([]), value)
             const newProperty = t.objectProperty(
-              t.identifier(`"${lastProperty.name}"`),
+              t.identifier(`"${unwrapQuotes(lastProperty.name)}"`),
               newValue.value ?? newValue
             )
             currentObject.push(newProperty)
@@ -215,13 +214,12 @@ function deleteKeyByPath(content: string, key: string): string {
           let propertyToDeleteIndex = -1
 
           for (let i = 0; i < keyProperties.length; i++) {
-            const propertyName = keyProperties[i]
+            const propertyName = unwrapQuotes(keyProperties[i])
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
                 t.isIdentifier(prop.key, {
-                  name: unwrapQuotes(propertyName),
-                }) ||
-                t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
+                  name: propertyName,
+                }) || t.isLiteral(prop.key, { value: propertyName })
             )
 
             if (propertyIndex >= 0) {

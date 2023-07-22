@@ -67,11 +67,11 @@ function getValueByPath(content: string, key: string): ParserValueType {
         let propertyIndex = -1
 
         for (let i = 0; i < keyProperties.length; i++) {
-          const propertyName = keyProperties[i]
+          const propertyName = unwrapQuotes(keyProperties[i])
           propertyIndex = currentObject.properties.findIndex(
             (prop) =>
-              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
-              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
+              t.isIdentifier(prop.key, { name: propertyName }) ||
+              t.isLiteral(prop.key, { value: propertyName })
           )
 
           if (propertyIndex >= 0) {
@@ -112,11 +112,11 @@ function putValueByPath(
       if (t.isObjectExpression(declaration) && keyProperties.length > 0) {
         let currentObject = declaration
         for (let i = 0; i < keyProperties.length - 1; i++) {
-          const propertyName = keyProperties[i].name
+          const propertyName = unwrapQuotes(keyProperties[i].name)
           const existingProperty = currentObject.properties.find(
             (prop) =>
-              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
-              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
+              t.isIdentifier(prop.key, { name: propertyName }) ||
+              t.isLiteral(prop.key, { value: propertyName })
           )
 
           if (existingProperty) {
@@ -135,13 +135,14 @@ function putValueByPath(
           }
         }
 
-        const lastPropertyName = keyProperties[keyProperties.length - 1].name
+        const lastPropertyName = unwrapQuotes(
+          keyProperties[keyProperties.length - 1].name
+        )
         const lastPropertyIndex = currentObject.properties.findIndex(
           (prop) =>
             t.isIdentifier(prop.key, {
-              name: unwrapQuotes(lastPropertyName),
-            }) ||
-            t.isLiteral(prop.key, { value: unwrapQuotes(lastPropertyName) })
+              name: lastPropertyName,
+            }) || t.isLiteral(prop.key, { value: lastPropertyName })
         )
 
         if (lastPropertyIndex >= 0) {
@@ -194,11 +195,11 @@ function deleteKeyByPath(content: string, key: string): string {
         let propertyIndex = -1
 
         for (let i = 0; i < keyProperties.length; i++) {
-          const propertyName = keyProperties[i]
+          const propertyName = unwrapQuotes(keyProperties[i])
           propertyIndex = currentObject.findIndex(
             (prop) =>
-              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
-              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
+              t.isIdentifier(prop.key, { name: propertyName }) ||
+              t.isLiteral(prop.key, { value: propertyName })
           )
 
           if (propertyIndex >= 0) {
