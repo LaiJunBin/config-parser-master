@@ -54,10 +54,10 @@ export function jsObjectToJSONFormat(obj) {
 
 export function unwrapQuotes(str: string): string {
   if (str.startsWith('"') && str.endsWith('"')) {
-    return str.slice(1, -1)
+    return unwrapQuotes(str.slice(1, -1))
   }
   if (str.startsWith("'") && str.endsWith("'")) {
-    return str.slice(1, -1)
+    return unwrapQuotes(str.slice(1, -1))
   }
   return str
 }

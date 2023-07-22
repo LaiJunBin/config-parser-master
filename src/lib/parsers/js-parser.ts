@@ -14,7 +14,7 @@ import {
   recursiveAssign,
   requireHandler,
 } from './js-utils'
-import { unwrapQuotes } from '../utils'
+import { splitByDot, unwrapQuotes } from '../utils'
 
 function getDeclaration(path) {
   const declaration = path.node.declaration
@@ -56,7 +56,7 @@ function getValueByPath(content: string, key: string): ParserValueType {
   const ast = parse(content, {
     sourceType: 'module',
   })
-  const keyProperties = key.split('.')
+  const keyProperties = splitByDot(key)
   let value = null
 
   traverse(ast, {
@@ -108,7 +108,7 @@ function putValueByPath(
   traverse(ast, {
     ExportDefaultDeclaration(path) {
       const declaration = getDeclaration(path)
-      const keyProperties = key.split('.').map((prop) => t.identifier(prop))
+      const keyProperties = splitByDot(key).map((prop) => t.identifier(prop))
       if (t.isObjectExpression(declaration) && keyProperties.length > 0) {
         let currentObject = declaration
         for (let i = 0; i < keyProperties.length - 1; i++) {
@@ -127,7 +127,7 @@ function putValueByPath(
             }
           } else {
             const newProperty = t.objectProperty(
-              t.identifier(propertyName),
+              t.identifier(`"${propertyName}"`),
               t.objectExpression([])
             )
             currentObject.properties.push(newProperty)
@@ -163,7 +163,7 @@ function putValueByPath(
         } else {
           const newValue = recursiveAssign(t.objectExpression([]), value)
           const newProperty = t.objectProperty(
-            t.identifier(lastPropertyName),
+            t.identifier(`"${lastPropertyName}"`),
             newValue.value ?? newValue
           )
 
@@ -181,7 +181,7 @@ function deleteKeyByPath(content: string, key: string): string {
   const ast = parse(content, {
     sourceType: 'module',
   })
-  const keyProperties = key.split('.')
+  const keyProperties = splitByDot(key)
 
   traverse(ast, {
     ExportDefaultDeclaration(path) {

@@ -680,7 +680,7 @@ describe('test cjs parser', () => {
             3,
           ])
           .replace(/\s+/g, ' ')
-      ).toBe(exportSyntax + `{ test: [1, console.log("hello world"), 3] };`)
+      ).toBe(exportSyntax + `{ "test": [1, console.log("hello world"), 3] };`)
     })
   })
 

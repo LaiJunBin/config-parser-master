@@ -250,7 +250,7 @@ describe('test json config', () => {
       )
     })
 
-    test('test put array', async () => {
+    test('test put array', () => {
       vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
             "test": {
                 "a": 1,
@@ -274,6 +274,30 @@ describe('test json config', () => {
     "d": [1, 2, 3]
   },
   "array": [1, 2, 3]
+}`
+      )
+    })
+
+    test('test put quote key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
+            "test": 1
+      }`)
+      const config = new JSONConfig('test')
+      config.put('"test"', 'test')
+      expect(config.get('test')).toBe('test')
+      config.put('"abc.c"', {
+        a: 1,
+        b: 2,
+      })
+      expect(config.get('"abc.c".a')).toBe(1)
+      expect(config.get('"abc.c".b')).toBe(2)
+      expect(config.content).toBe(
+        `{
+  "test": "test",
+  "abc.c": {
+    "a": 1,
+    "b": 2
+  }
 }`
       )
     })
@@ -332,6 +356,24 @@ describe('test json config', () => {
       expect(config.get('test')).toBeUndefined()
       expect(parser.get(removeComments(config.content), 'test')).toBeUndefined()
       expect(() => parser.check(config.content)).toThrow()
+    })
+
+    test('test delete quote key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
+                "test": 1,
+                "abc.c": {
+                    "a": 1,
+                    "b": 2
+                }
+        }`)
+      const config = new JSONConfig('test')
+      config.delete('"test"')
+      expect(config.get('test')).toBeUndefined()
+      config.delete('abc.c')
+      expect(config.get('"abc.c".a')).toBe(1)
+      config.delete('"abc.c"')
+      expect(config.get('"abc.c"')).toBeUndefined()
+      expect(config.content).toBe('{\n}')
     })
   })
 

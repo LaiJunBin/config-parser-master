@@ -236,5 +236,16 @@ describe('test utils', () => {
       expect(unwrapQuotes('test')).toBe('test')
       expect(unwrapQuotes('')).toBe('')
     })
+
+    test('test unwrap multi quotes', () => {
+      expect(unwrapQuotes(`""test""`)).toBe('test')
+      expect(unwrapQuotes(`''test''`)).toBe('test')
+      expect(unwrapQuotes(`"'test'"`)).toBe('test')
+      expect(unwrapQuotes(`'"test"'`)).toBe('test')
+      expect(unwrapQuotes(`"""test"""`)).toBe('test')
+      expect(unwrapQuotes(`'''test'''`)).toBe('test')
+      expect(unwrapQuotes(`""'test'""`)).toBe('test')
+      expect(unwrapQuotes(`''"test"''`)).toBe('test')
+    })
   })
 })
