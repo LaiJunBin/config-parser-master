@@ -14,6 +14,7 @@ import {
   recursiveAssign,
   requireHandler,
 } from './js-utils'
+import { unwrapQuotes } from '../utils'
 
 function checkModuleExports(content: string): boolean {
   const ast = parse(content, {
@@ -75,8 +76,10 @@ function getValueByPath(content: string, key: string): ParserValueType {
             const propertyName = keyProperties[i]
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
-                t.isIdentifier(prop.key, { name: propertyName }) ||
-                t.isLiteral(prop.key, { value: propertyName })
+                t.isIdentifier(prop.key, {
+                  name: unwrapQuotes(propertyName),
+                }) ||
+                t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
             )
 
             if (propertyIndex >= 0) {
@@ -129,8 +132,10 @@ function putValueByPath(
             const property = properties[i]
             const propertyIndex = currentObject.findIndex(
               (objProp) =>
-                t.isIdentifier(objProp.key, { name: property.name }) ||
-                t.isLiteral(objProp.key, { value: property.name })
+                t.isIdentifier(objProp.key, {
+                  name: unwrapQuotes(property.name),
+                }) ||
+                t.isLiteral(objProp.key, { value: unwrapQuotes(property.name) })
             )
 
             if (propertyIndex >= 0) {
@@ -153,8 +158,12 @@ function putValueByPath(
           const lastProperty = properties[properties.length - 1]
           const lastPropertyIndex = currentObject.findIndex(
             (objProp) =>
-              t.isIdentifier(objProp.key, { name: lastProperty.name }) ||
-              t.isLiteral(objProp.key, { value: lastProperty.name })
+              t.isIdentifier(objProp.key, {
+                name: unwrapQuotes(lastProperty.name),
+              }) ||
+              t.isLiteral(objProp.key, {
+                value: unwrapQuotes(lastProperty.name),
+              })
           )
 
           if (lastPropertyIndex >= 0) {
@@ -209,8 +218,10 @@ function deleteKeyByPath(content: string, key: string): string {
             const propertyName = keyProperties[i]
             propertyIndex = currentObject.properties.findIndex(
               (prop) =>
-                t.isIdentifier(prop.key, { name: propertyName }) ||
-                t.isLiteral(prop.key, { value: propertyName })
+                t.isIdentifier(prop.key, {
+                  name: unwrapQuotes(propertyName),
+                }) ||
+                t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
             )
 
             if (propertyIndex >= 0) {

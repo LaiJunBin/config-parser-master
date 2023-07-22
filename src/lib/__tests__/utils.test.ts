@@ -1,4 +1,9 @@
-import { jsObjectToJSONFormat, removeComments, splitByDot } from '../utils'
+import {
+  jsObjectToJSONFormat,
+  removeComments,
+  splitByDot,
+  unwrapQuotes,
+} from '../utils'
 
 describe('test utils', () => {
   describe('test splitByDot', () => {
@@ -217,6 +222,19 @@ describe('test utils', () => {
         '"null"': null,
         '"array"': [1, 2, 3],
       })
+    })
+  })
+
+  describe('test unwrapQuotes', () => {
+    test('test unwrapQuotes', () => {
+      expect(unwrapQuotes('"test"')).toBe('test')
+      expect(unwrapQuotes("'test'")).toBe('test')
+      expect(unwrapQuotes('"test')).toBe('"test')
+      expect(unwrapQuotes("'test")).toBe("'test")
+      expect(unwrapQuotes('test"')).toBe('test"')
+      expect(unwrapQuotes("test'")).toBe("test'")
+      expect(unwrapQuotes('test')).toBe('test')
+      expect(unwrapQuotes('')).toBe('')
     })
   })
 })

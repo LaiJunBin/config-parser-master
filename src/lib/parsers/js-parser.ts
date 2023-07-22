@@ -14,6 +14,7 @@ import {
   recursiveAssign,
   requireHandler,
 } from './js-utils'
+import { unwrapQuotes } from '../utils'
 
 function getDeclaration(path) {
   const declaration = path.node.declaration
@@ -69,8 +70,8 @@ function getValueByPath(content: string, key: string): ParserValueType {
           const propertyName = keyProperties[i]
           propertyIndex = currentObject.properties.findIndex(
             (prop) =>
-              t.isIdentifier(prop.key, { name: propertyName }) ||
-              t.isLiteral(prop.key, { value: propertyName })
+              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
+              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
           )
 
           if (propertyIndex >= 0) {
@@ -114,8 +115,8 @@ function putValueByPath(
           const propertyName = keyProperties[i].name
           const existingProperty = currentObject.properties.find(
             (prop) =>
-              t.isIdentifier(prop.key, { name: propertyName }) ||
-              t.isLiteral(prop.key, { value: propertyName })
+              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
+              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
           )
 
           if (existingProperty) {
@@ -137,8 +138,10 @@ function putValueByPath(
         const lastPropertyName = keyProperties[keyProperties.length - 1].name
         const lastPropertyIndex = currentObject.properties.findIndex(
           (prop) =>
-            t.isIdentifier(prop.key, { name: lastPropertyName }) ||
-            t.isLiteral(prop.key, { value: lastPropertyName })
+            t.isIdentifier(prop.key, {
+              name: unwrapQuotes(lastPropertyName),
+            }) ||
+            t.isLiteral(prop.key, { value: unwrapQuotes(lastPropertyName) })
         )
 
         if (lastPropertyIndex >= 0) {
@@ -194,8 +197,8 @@ function deleteKeyByPath(content: string, key: string): string {
           const propertyName = keyProperties[i]
           propertyIndex = currentObject.findIndex(
             (prop) =>
-              t.isIdentifier(prop.key, { name: propertyName }) ||
-              t.isLiteral(prop.key, { value: propertyName })
+              t.isIdentifier(prop.key, { name: unwrapQuotes(propertyName) }) ||
+              t.isLiteral(prop.key, { value: unwrapQuotes(propertyName) })
           )
 
           if (propertyIndex >= 0) {

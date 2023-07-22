@@ -174,6 +174,39 @@ describe('test json config', () => {
         ).test
       ).toBe('test')
     })
+
+    test('test put to same key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce('{ "test": "test" }')
+      const config = new JSONConfig('test')
+      const parser = new JSONParser()
+
+      expect(config.put('test', '100')).toBe(config)
+      expect(config.get('test')).toBe('100')
+      expect(parser.get(config.content, 'test')).toBe('100')
+      expect(config.content).toBe('{\n  "test": "100"\n}')
+    })
+
+    test('test put object to same key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(
+        '{ "test": { "child": {}} }'
+      )
+      const config = new JSONConfig('test')
+      const parser = new JSONParser()
+
+      expect(
+        config.put('test.child', {
+          test: 'test',
+          parent: {
+            test: 'test',
+          },
+        })
+      ).toBe(config)
+      expect(config.get('test.child.test')).toBe('test')
+      expect(parser.get(config.content, 'test.child.test')).toBe('test')
+      expect(config.content).toBe(
+        '{\n  "test": {\n    "child": {\n      "test": "test",\n      "parent": {\n        "test": "test"\n      }\n    }\n  }\n}'
+      )
+    })
   })
 
   describe('test delete', () => {
