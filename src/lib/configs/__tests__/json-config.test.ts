@@ -250,6 +250,26 @@ describe('test json config', () => {
       )
     })
 
+    test('test put object value is array and same child key', () => {
+      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
+                "parent": {
+                    "child": ["init"]
+                }
+        }`)
+      const config = new JSONConfig('test')
+      config.put('parent', {
+        child: ['test'],
+      })
+      expect(config.get('parent.child')).toStrictEqual(['test'])
+      expect(config.content).toBe(
+        `{
+  "parent": {
+    "child": ["test"]
+  }
+}`
+      )
+    })
+
     test('test put array', () => {
       vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(`{
             "test": {

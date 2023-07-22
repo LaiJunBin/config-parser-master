@@ -59,7 +59,16 @@ export function recursiveAssign(node, value: ParserValueType) {
             t.identifier(key),
             recursiveAssign(t.objectExpression([]), val).value
           )
-          node.properties.push(property)
+          const index = node.properties.findIndex(
+            (prop) =>
+              prop.key.name === key || prop.key.value === unwrapQuotes(key)
+          )
+
+          if (index !== -1) {
+            node.properties[index] = property
+          } else {
+            node.properties.push(property)
+          }
         } else if (typeof val === 'object') {
           const property = t.objectProperty(
             t.identifier(key),
