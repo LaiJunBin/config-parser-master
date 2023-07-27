@@ -28,9 +28,11 @@ class TestConfig extends BaseConfig {
   }
 }
 
+class TestJSParser extends TestParser {}
+
 class TestJSConfig extends BaseJSConfig {
   constructor(file: string) {
-    super(file, new TestParser())
+    super(file, new TestJSParser())
   }
 }
 
@@ -40,14 +42,14 @@ describe('test list configs', () => {
   })
 
   test('register parser', () => {
-    ConfigParser.register('.test', BaseConfig)
+    ConfigParser.register('.test', [BaseConfig])
     expect(ConfigParser.listConfigs()).toEqual(['.test'])
   })
 })
 
 describe('test parse with register extension', () => {
   test('correct parser', () => {
-    ConfigParser.register('.test', TestConfig)
+    ConfigParser.register('.test', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(() => {
@@ -56,7 +58,7 @@ describe('test parse with register extension', () => {
   })
 
   test('incorrect parser', () => {
-    ConfigParser.register('.test', TestConfig)
+    ConfigParser.register('.test', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(() => {
@@ -65,7 +67,7 @@ describe('test parse with register extension', () => {
   })
 
   test('file not exists', () => {
-    ConfigParser.register('.test', TestConfig)
+    ConfigParser.register('.test', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(false)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(() => {
@@ -74,7 +76,7 @@ describe('test parse with register extension', () => {
   })
 
   test(`can't parse file`, () => {
-    ConfigParser.register('.test', TestConfig)
+    ConfigParser.register('.test', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     vi.spyOn(TestParser.prototype, 'check').mockReturnValueOnce(false)
@@ -86,7 +88,7 @@ describe('test parse with register extension', () => {
 
 describe('test parse with register endwith', () => {
   test('correct parser', () => {
-    ConfigParser.registerEndwith('rc', TestConfig)
+    ConfigParser.registerEndwith('rc', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(() => {
@@ -95,7 +97,7 @@ describe('test parse with register endwith', () => {
   })
 
   test('incorrect parser', () => {
-    ConfigParser.registerEndwith('rc', TestConfig)
+    ConfigParser.registerEndwith('rc', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(() => {
@@ -106,23 +108,49 @@ describe('test parse with register endwith', () => {
 
 describe('test parse instance type', () => {
   test('parse js', () => {
-    ConfigParser.register('.js', TestJSConfig)
+    ConfigParser.register('.js', [TestJSConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('module.exports = { test: 1 }')
     expect(ConfigParser.parseJs('test.js')).instanceOf(BaseJSConfig)
   })
 
   test('parse other', () => {
-    ConfigParser.register('.test', TestConfig)
+    ConfigParser.register('.test', [TestConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('test')
     expect(ConfigParser.parse('test.test')).instanceOf(BaseConfig)
   })
 
   test('parse js with parse, should return base config', () => {
-    ConfigParser.register('.js', TestJSConfig)
+    ConfigParser.register('.js', [TestJSConfig])
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue('module.exports = { test: 1 }')
     expect(ConfigParser.parse('test.js')).instanceOf(BaseConfig)
+  })
+})
+
+describe('test parse register multiple config', () => {
+  test('hit first config', () => {
+    ConfigParser.register('.js', [TestJSConfig, TestConfig])
+    vi.spyOn(fs, 'existsSync').mockReturnValue(true)
+    vi.spyOn(fs, 'readFileSync').mockReturnValue('module.exports = { test: 1 }')
+    expect(ConfigParser.parse('test.js')).instanceOf(TestJSConfig)
+  })
+
+  test('hit second config', () => {
+    ConfigParser.register('.js', [TestConfig, TestJSConfig])
+    vi.spyOn(fs, 'existsSync').mockReturnValue(true)
+    vi.spyOn(fs, 'readFileSync').mockReturnValue('module.exports = { test: 1 }')
+    vi.spyOn(TestParser.prototype, 'check').mockReturnValueOnce(false)
+    expect(ConfigParser.parse('test.js')).instanceOf(TestJSConfig)
+  })
+
+  test('hit no config', () => {
+    ConfigParser.register('.js', [TestConfig, TestJSConfig])
+    vi.spyOn(fs, 'existsSync').mockReturnValue(true)
+    vi.spyOn(fs, 'readFileSync').mockReturnValue('module.exports = { test: 1 }')
+    vi.spyOn(TestParser.prototype, 'check').mockReturnValueOnce(false)
+    vi.spyOn(TestJSParser.prototype, 'check').mockReturnValueOnce(false)
+    expect(() => ConfigParser.parse('test.js')).toThrow()
   })
 })
