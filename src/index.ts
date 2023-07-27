@@ -6,7 +6,9 @@ import { YamlConfig } from './lib/configs/yaml-config'
 
 ConfigParser.register('.cjs', [CJSConfig, JSConfig])
 ConfigParser.register('.js', [JSConfig, CJSConfig])
+ConfigParser.register('.jsx', [JSConfig, CJSConfig])
 ConfigParser.register('.ts', [JSConfig, CJSConfig])
+ConfigParser.register('.tsx', [JSConfig, CJSConfig])
 ConfigParser.register('.mjs', [JSConfig, CJSConfig])
 ConfigParser.register('.mts', [JSConfig, CJSConfig])
 ConfigParser.register('.yml', [YamlConfig])
