@@ -12,6 +12,6 @@ ConfigParser.register('.mts', [JSConfig, CJSConfig])
 ConfigParser.register('.yml', [YamlConfig])
 ConfigParser.register('.yaml', [YamlConfig])
 ConfigParser.register('.json', [JSONConfig])
-ConfigParser.registerEndwith('rc', JSONConfig)
+ConfigParser.registerEndwith('rc', [JSONConfig])
 
 export { ConfigParser }

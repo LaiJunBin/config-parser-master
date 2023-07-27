@@ -19,9 +19,9 @@ export class ConfigParser {
       }
 
       for (const validate of ConfigParser.#validates) {
-        const config = validate(file)
-        if (config) {
-          return config
+        const configs = validate(file)
+        if (configs) {
+          return configs
         }
       }
     })()
@@ -54,10 +54,10 @@ export class ConfigParser {
     this.#configs[ext] = configs
   }
 
-  static registerEndwith(ext, config) {
+  static registerEndwith(ext, configs) {
     this.#validates.push((file) => {
       if (file.endsWith(ext)) {
-        return config
+        return configs
       }
     })
   }
