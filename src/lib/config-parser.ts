@@ -13,25 +13,34 @@ export class ConfigParser {
     }
 
     const ext = path.extname(file)
-    const config = (function getConfig() {
+    const configs = (function getConfig() {
       if (ConfigParser.#configs[ext]) {
         return ConfigParser.#configs[ext]
       }
 
       for (const validate of ConfigParser.#validates) {
-        const config = validate(file)
-        if (config) {
-          return config
+        const configs = validate(file)
+        if (configs) {
+          return configs
         }
       }
     })()
 
-    if (!config) {
+    if (!configs) {
       throw new Error(`Can't find config support ${ext}`)
     }
 
     try {
-      return new config(file, skipCheck)
+      for (const config of configs) {
+        try {
+          const instance = new config(file, skipCheck)
+          return instance
+        } catch (e) {
+          continue
+        }
+      }
+
+      throw new Error(`Can't find config to resolve ${file}`)
     } catch (e) {
       throw new Error(`Can't parser file: ${file}\n${e}`)
     }
@@ -41,14 +50,14 @@ export class ConfigParser {
     return this.parse(file, skipCheck) as BaseJSConfig
   }
 
-  static register(ext, config) {
-    this.#configs[ext] = config
+  static register(ext, configs) {
+    this.#configs[ext] = configs
   }
 
-  static registerEndwith(ext, config) {
+  static registerEndwith(ext, configs) {
     this.#validates.push((file) => {
       if (file.endsWith(ext)) {
-        return config
+        return configs
       }
     })
   }
