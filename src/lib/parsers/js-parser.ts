@@ -28,7 +28,7 @@ function getDeclaration(path) {
 function checkExportDefault(content: string): boolean {
   const ast = parse(content, {
     sourceType: 'module',
-    plugins: ['jsx'],
+    plugins: ['jsx', 'typescript'],
   })
   let hasExportDefaultObject = false
 
@@ -56,7 +56,7 @@ function checkExportDefault(content: string): boolean {
 function getValueByPath(content: string, key: string): ParserValueType {
   const ast = parse(content, {
     sourceType: 'module',
-    plugins: ['jsx'],
+    plugins: ['jsx', 'typescript'],
   })
   const keyProperties = splitByDot(key)
   let value = null
@@ -106,7 +106,7 @@ function putValueByPath(
 ): string {
   const ast = parse(content, {
     sourceType: 'module',
-    plugins: ['jsx'],
+    plugins: ['jsx', 'typescript'],
   })
   traverse(ast, {
     ExportDefaultDeclaration(path) {
@@ -184,7 +184,7 @@ function putValueByPath(
 function deleteKeyByPath(content: string, key: string): string {
   const ast = parse(content, {
     sourceType: 'module',
-    plugins: ['jsx'],
+    plugins: ['jsx', 'typescript'],
   })
   const keyProperties = splitByDot(key)
 
