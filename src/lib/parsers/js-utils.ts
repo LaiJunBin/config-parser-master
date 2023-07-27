@@ -126,6 +126,7 @@ export function importHandler(
   const { keys, defaultKey } = options
   const ast = parse(content, {
     sourceType: 'module',
+    plugins: ['jsx'],
   })
 
   const specifiers = []
@@ -164,6 +165,7 @@ export function requireHandler(
   const { keys, defaultKey } = options ?? {}
   const ast = parse(content, {
     sourceType: 'module',
+    plugins: ['jsx'],
   })
 
   const requireDeclaration =
@@ -303,6 +305,7 @@ export function isContainCallExpression(
 ): boolean {
   const ast = parse(content, {
     sourceType: 'module',
+    plugins: ['jsx'],
   })
 
   let isContain = false
