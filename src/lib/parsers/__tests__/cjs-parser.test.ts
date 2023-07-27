@@ -420,7 +420,7 @@ describe('test cjs parser', () => {
             ),
             'test.call'
           ),
-          'testCall'
+          'testCall()'
         )
       ).toBeTruthy()
     })
@@ -689,7 +689,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isSameCallExpression(
           parser.createCallExpression('console.log', ['hello world']),
-          'console.log'
+          'console.log()'
         )
       ).toBeTruthy()
     })
@@ -698,7 +698,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isSameCallExpression(
           parser.createCallExpression('console.log.mid.last', ['1', '2']),
-          'console.log.mid.last'
+          'console.log.mid.last()'
         )
       ).toBeTruthy()
     })
@@ -709,7 +709,7 @@ describe('test cjs parser', () => {
           parser.createCallExpression('console.log', [
             parser.createCallExpression('console.log', ['hello world']),
           ]),
-          'console.log'
+          'console.log()'
         )
       ).toBeTruthy()
     })
@@ -718,7 +718,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isSameCallExpression(
           parser.createCallExpression('console.log', ['hello world']),
-          'console.error'
+          'console.error()'
         )
       ).toBeFalsy()
     })
@@ -727,7 +727,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isSameCallExpression(
           parser.createCallExpression('console.log.mid.last', ['1', '2']),
-          'console.log.mid.last.error'
+          'console.log.mid.last.error()'
         )
       ).toBeFalsy()
     })
@@ -742,7 +742,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isStrictSameCallExpression(
           parser.createCallExpression('console.log', ['hello world']),
-          'console.log',
+          'console.log()',
           ['hello world']
         )
       ).toBeTruthy()
@@ -752,7 +752,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isStrictSameCallExpression(
           parser.createCallExpression('console.log.mid.last', ['1', '2']),
-          'console.log.mid.last',
+          'console.log.mid.last()',
           ['1', '2']
         )
       ).toBeTruthy()
@@ -764,7 +764,7 @@ describe('test cjs parser', () => {
           parser.createCallExpression('console.log', [
             parser.createCallExpression('console.log', ['hello world']),
           ]),
-          'console.log',
+          'console.log()',
           [parser.createCallExpression('console.log', ['hello world'])]
         )
       ).toBeTruthy()
@@ -774,7 +774,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isStrictSameCallExpression(
           parser.createCallExpression('console.log', ['hello world']),
-          'console.log',
+          'console.log()',
           ['hello world', '1']
         )
       ).toBeFalsy()
@@ -784,7 +784,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isStrictSameCallExpression(
           parser.createCallExpression('console.log.mid.last', ['1', '2']),
-          'console.log.mid.last',
+          'console.log.mid.last()',
           ['1']
         )
       ).toBeFalsy()
@@ -796,7 +796,7 @@ describe('test cjs parser', () => {
           parser.createCallExpression('console.log', [
             parser.createCallExpression('console.log', ['hello world']),
           ]),
-          'console.log',
+          'console.log()',
           [parser.createCallExpression('console.log', ['hello world!'])]
         )
       ).toBeFalsy()
@@ -812,7 +812,7 @@ describe('test cjs parser', () => {
             ]),
             parser.createCallExpression('console.log', ['hello world!']),
           ]),
-          'console.log',
+          'console.log()',
           [
             parser.createCallExpression('console.log', [
               'hello world',
@@ -832,7 +832,7 @@ describe('test cjs parser', () => {
       expect(
         parser.isStrictSameCallExpression(
           parser.createCallExpression('console.log', ['hello world']),
-          'console.log'
+          'console.log()'
         )
       ).toBeFalsy()
     })
@@ -889,19 +889,23 @@ describe('test cjs parser', () => {
   describe('test isContainCallExpression', () => {
     test('test is contain call expression without arg', () => {
       expect(
-        parser.isContainCallExpression('console.log(123)', 'console.log')
+        parser.isContainCallExpression('console.log(123)', 'console.log()')
       ).toBeTruthy()
     })
 
     test('test is contain call expression with arg success', () => {
       expect(
-        parser.isContainCallExpression('console.log(123)', 'console.log', [123])
+        parser.isContainCallExpression('console.log(123)', 'console.log()', [
+          123,
+        ])
       ).toBeTruthy()
     })
 
     test('test is contain call expression with arg fail', () => {
       expect(
-        parser.isContainCallExpression('console.log(123)', 'console.log', [456])
+        parser.isContainCallExpression('console.log(123)', 'console.log()', [
+          456,
+        ])
       ).toBeFalsy()
     })
   })
