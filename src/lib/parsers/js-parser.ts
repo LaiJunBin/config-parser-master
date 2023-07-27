@@ -41,6 +41,9 @@ function checkExportDefault(content: string): boolean {
           declaration.arguments.length === 1 &&
           t.isObjectExpression(declaration.arguments[0]))
       ) {
+        if (hasExportDefaultObject) {
+          throw new Error('only one export default object is allowed')
+        }
         hasExportDefaultObject = true
       }
     },
