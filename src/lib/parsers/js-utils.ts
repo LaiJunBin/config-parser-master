@@ -221,11 +221,18 @@ export function createCallExpressionHandler(
   return callExpression
 }
 
-function getCalleeFullName(callee: t.MemberExpression | t.Identifier): string {
+export function getCalleeFullName(
+  callee: t.MemberExpression | t.Identifier
+): string {
   if (t.isIdentifier(callee)) {
     return callee.name
   }
-  return getCalleeFullName(callee.object) + '.' + callee.property.name
+
+  if (callee.callee) {
+    return getCalleeFullName(callee.callee) + '()'
+  }
+
+  return getCalleeFullName(callee.object) + '.' + callee?.property?.name
 }
 
 export function isStrictSameCallExpression(
@@ -242,7 +249,7 @@ export function isStrictSameCallExpression(
   }
 
   return (
-    getCalleeFullName(callExpression.callee) === name &&
+    getCalleeFullName(callExpression) === name &&
     Array.isArray(callExpression.arguments) &&
     callExpression.arguments.every((arg, index) => {
       if (!args) {
@@ -251,7 +258,7 @@ export function isStrictSameCallExpression(
         if (t.isCallExpression(arg)) {
           return isStrictSameCallExpression(
             arg,
-            getCalleeFullName(args[index].callee),
+            getCalleeFullName(args[index]),
             getCallExpressionArgs(args[index])
           )
         }
@@ -270,7 +277,7 @@ export function isSameCallExpression(
     return false
   }
 
-  return getCalleeFullName(callExpression.callee) === name
+  return getCalleeFullName(callExpression) === name
 }
 
 export function getCallExpressionArgs(
