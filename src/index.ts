@@ -3,6 +3,7 @@ import { CJSConfig } from './lib/configs/cjs-config'
 import { JSConfig } from './lib/configs/js-config'
 import { JSONConfig } from './lib/configs/json-config'
 import { YamlConfig } from './lib/configs/yaml-config'
+import { ParserValueType } from './lib/parsers'
 
 ConfigParser.register('.cjs', [CJSConfig, JSConfig])
 ConfigParser.register('.js', [JSConfig, CJSConfig])
@@ -16,4 +17,4 @@ ConfigParser.register('.yaml', [YamlConfig])
 ConfigParser.register('.json', [JSONConfig])
 ConfigParser.registerEndwith('rc', [JSONConfig])
 
-export { ConfigParser }
+export { ConfigParser, ParserValueType }
